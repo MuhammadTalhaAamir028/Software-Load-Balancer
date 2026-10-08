@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.idea/
+.vscode/
+logs/
+*.log
+.pytest_cache/
+results/raw/
+# keep captures/*.pcapng tracked on purpose
