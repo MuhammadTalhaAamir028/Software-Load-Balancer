@@ -1,0 +1,14 @@
+{
+  "listen": {"host": "0.0.0.0", "port": 8080},
+  "algorithm": "round_robin",
+  "backends": [
+    {"id": "b1", "host": "10.0.3.11", "port": 8000},
+    {"id": "b2", "host": "10.0.3.12", "port": 8000},
+    {"id": "b3", "host": "10.0.3.13", "port": 8000},
+    {"id": "b4", "host": "10.0.3.14", "port": 8000}
+  ],
+  "health": {"path": "/health", "interval_s": 1.0, "timeout_s": 0.5, "fail_threshold": 3, "success_threshold": 2},
+  "timeouts": {"connect_s": 2.0, "read_s": 10.0, "keepalive_s": 15.0},
+  "logging": {"path": "logs/lb.jsonl", "level": "INFO"},
+  "stats": {"host": "0.0.0.0", "port": 9090}
+}
