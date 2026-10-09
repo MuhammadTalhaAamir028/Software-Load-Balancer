@@ -1,0 +1,59 @@
+# Development setup: four backends of unequal capacity on one machine.
+# Values for delay and CPU come from the .env file next to this file.
+
+# A reusable block (YAML anchor). Every service below includes it with "<<: *backend",
+# so the build instructions and the image name are written only once.
+x-backend: &backend
+  build: .
+  image: cn-lb-backend:latest
+  restart: "no"
+
+services:
+  b1:
+    <<: *backend
+    # A fixed container name is required: kill_backend.sh and start_backend.sh
+    # find the container by its name (prefix + id).
+    container_name: b1
+    environment:
+      BACKEND_ID: b1
+      # ":?" stops Compose with a clear message if the variable is missing in .env.
+      DELAY_MS: ${B1_DELAY_MS:?set B1_DELAY_MS in .env}
+      PORT: "8000"
+    # CPU limit enforced by Docker; this is what makes the backends unequal.
+    cpus: ${B1_CPUS:?set B1_CPUS in .env}
+    # host:container. Host ports 8001-8004 exist for development only.
+    ports:
+      - "8001:8000"
+
+  b2:
+    <<: *backend
+    container_name: b2
+    environment:
+      BACKEND_ID: b2
+      DELAY_MS: ${B2_DELAY_MS:?set B2_DELAY_MS in .env}
+      PORT: "8000"
+    cpus: ${B2_CPUS:?set B2_CPUS in .env}
+    ports:
+      - "8002:8000"
+
+  b3:
+    <<: *backend
+    container_name: b3
+    environment:
+      BACKEND_ID: b3
+      DELAY_MS: ${B3_DELAY_MS:?set B3_DELAY_MS in .env}
+      PORT: "8000"
+    cpus: ${B3_CPUS:?set B3_CPUS in .env}
+    ports:
+      - "8003:8000"
+
+  b4:
+    <<: *backend
+    container_name: b4
+    environment:
+      BACKEND_ID: b4
+      DELAY_MS: ${B4_DELAY_MS:?set B4_DELAY_MS in .env}
+      PORT: "8000"
+    cpus: ${B4_CPUS:?set B4_CPUS in .env}
+    ports:
+      - "8004:8000"
