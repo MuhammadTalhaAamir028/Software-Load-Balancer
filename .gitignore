@@ -8,4 +8,5 @@ logs/
 *.log
 .pytest_cache/
 results/raw/
+kill_ts.txt
 # keep captures/*.pcapng tracked on purpose
