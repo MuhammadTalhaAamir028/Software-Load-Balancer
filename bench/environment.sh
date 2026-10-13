@@ -18,7 +18,7 @@ echo "docker:       $(docker version --format '{{.Server.Version}}' 2>/dev/null)
 echo "containerlab: $(containerlab version 2>/dev/null | awk '/version/ {print $2; exit}')"
 echo "python:       $(python3 --version 2>&1)"
 echo "haproxy:      $(docker run --rm haproxy:2.8 haproxy -v 2>/dev/null | head -1)"
-echo "hey_sha256:   $(docker exec "${PREFIX}c1" sha256sum /usr/local/bin/hey 2>/dev/null | cut -d' ' -f1)"
+echo "client_image: $(docker inspect -f '{{.Id}}' "${CLIENT_IMAGE:-cn-lb-client:latest}" 2>/dev/null) (hey built from rakyll/hey v0.1.4)"
 echo "wrk:          $(docker exec "${PREFIX}c1" wrk --version 2>&1 | head -1)"
 echo "ulimit_host:  $(ulimit -n)"
 echo "ulimit_c1:    $(docker exec "${PREFIX}c1" sh -c 'ulimit -n' 2>/dev/null)"
