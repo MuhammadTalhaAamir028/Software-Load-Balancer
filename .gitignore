@@ -15,3 +15,8 @@ haproxy/haproxy.cfg
 # topology runtime state
 topo/.netem_state
 topo/clab-*/
+
+# benchmark runtime files
+results/lb_config.json
+results/configs/
+results/.lock
