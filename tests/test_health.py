@@ -284,7 +284,7 @@ class HealthTestCase(unittest.IsolatedAsyncioTestCase):
         backend.port = server.port
         logger = FakeLogger()
         checker = ActiveHealthChecker(
-            config_for([("raw", backend)], path=path, timeout_s=0.5),
+            config_for([("raw", backend)], path=path, interval_s=1.0, timeout_s=0.5),
             StubPool([Backend("raw", server.host, int(server.port))]),
             logger,
         )
