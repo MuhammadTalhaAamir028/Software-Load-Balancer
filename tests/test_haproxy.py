@@ -60,6 +60,7 @@ def test_render_script_checks_the_generated_config_with_pinned_image() -> None:
     assert "haproxy:2.8" in script
     assert 'container_cfg="/usr/local/etc/haproxy/haproxy.cfg"' in script
     assert 'haproxy -c -f "$container_cfg"' in script
+    assert 'chmod 644 "$tmp_cfg"' in script
     assert "cygpath -m" in script
     assert "MSYS_NO_PATHCONV=1 docker run" in script
     assert "--mount" in script
