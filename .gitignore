@@ -9,4 +9,5 @@ logs/
 .pytest_cache/
 results/raw/
 kill_ts.txt
+haproxy/haproxy.cfg
 # keep captures/*.pcapng tracked on purpose
