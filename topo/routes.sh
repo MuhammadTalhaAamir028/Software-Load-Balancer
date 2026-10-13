@@ -13,8 +13,9 @@ nexec r2 vtysh -c "configure terminal" -c "ip route $NET_CLIENTS $R1_LB_IP"
 
 # Hosts: `replace` instead of `add`, so running twice does no harm.
 for c in $CLIENT_NODES;  do nexec "$c" ip route replace default via "$R1_CLIENT_IP"; done
-for b in $BACKEND_NODES; do nexec "$b" ip route replace default via "$R2_BACKEND_IP"; done
-for n in lb haproxy; do
+# b*-net, lb-net and haproxy-net are the network holders (see clab.yml): they own the addresses and routes.
+for b in $BACKEND_NODES; do nexec "${b}-net" ip route replace default via "$R2_BACKEND_IP"; done
+for n in lb-net haproxy-net; do
   nexec "$n" ip route replace "$NET_CLIENTS"  via "$R1_LB_IP"
   nexec "$n" ip route replace "$NET_BACKENDS" via "$R2_LB_IP"
 done
@@ -24,5 +25,5 @@ echo "=== R2 (kernel table)";  nexec r2 ip route
 echo "=== R1 static routes in FRR"; nexec r1 vtysh -c "show ip route static"
 echo "=== R2 static routes in FRR"; nexec r2 vtysh -c "show ip route static"
 echo "=== c1";  nexec c1 ip route
-echo "=== b1";  nexec b1 ip route
-echo "=== lb";  nexec lb ip route
+echo "=== b1";  nexec b1-net ip route
+echo "=== lb";  nexec lb-net ip route

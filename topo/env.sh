@@ -11,16 +11,11 @@ CLAB_PREFIX="clab-${LAB}-"           # containers are clab-lb-<node>; same value
 CLAB_FILE="$TOPO_DIR/clab.yml"
 
 # ---- images -------------------------------------------------------------
-FRR_IMAGE=${FRR_IMAGE:-quay.io/frrouting/frr:10.2.1}           # routers and L2 switches
+FRR_IMAGE=${FRR_IMAGE:-quay.io/frrouting/frr:10.2.1}           # routers, L2 switches and the network holders
 CLIENT_IMAGE=${CLIENT_IMAGE:-cn-lb-client:latest}              # c1-c4 (Abdur: hey, wrk, curl, tcpdump)
 BACKEND_IMAGE=${BACKEND_IMAGE:-cn-lb-backend:latest}           # b1-b4 (Abdur)
 LB_BASE_IMAGE=${LB_BASE_IMAGE:-python:3.11-slim}               # own LB runs inside this
 HAPROXY_BASE_IMAGE=${HAPROXY_BASE_IMAGE:-haproxy:2.8}          # reference LB (version pinned by Abdur)
-# The three slim images above have no `ip` command, so containerlab cannot give them an address.
-# Dockerfile.node adds iproute2 on top. These are the resulting names.
-BACKEND_NET_IMAGE=${BACKEND_NET_IMAGE:-cn-lb-backend-net:latest}
-LB_NET_IMAGE=${LB_NET_IMAGE:-cn-lb-lb-net:latest}
-HAPROXY_NET_IMAGE=${HAPROXY_NET_IMAGE:-cn-lb-haproxy-net:latest}
 
 # ---- what runs on the LB node ------------------------------------------------
 LB_CODE_DIR=${LB_CODE_DIR:-$REPO_DIR}                          # must contain lb/ (core + balancing + obs merged)
@@ -46,7 +41,7 @@ BACKEND_NODES="b1 b2 b3 b4"
 
 # ---- helpers ------------------------------------------------------------------
 # Everything clab.yml expands with ${...} must be exported.
-export FRR_IMAGE CLIENT_IMAGE BACKEND_NET_IMAGE LB_NET_IMAGE HAPROXY_NET_IMAGE
+export FRR_IMAGE CLIENT_IMAGE BACKEND_IMAGE LB_BASE_IMAGE HAPROXY_BASE_IMAGE
 export LB_CODE_DIR LB_CONFIG HAPROXY_DIR LB_CPUS
 export B1_DELAY_MS B1_CPUS B2_DELAY_MS B2_CPUS B3_DELAY_MS B3_CPUS B4_DELAY_MS B4_CPUS
 
