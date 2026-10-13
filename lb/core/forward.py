@@ -25,7 +25,6 @@ class Result:
     bytes_down: int = 0              # bytes written to the client
     keep_alive: bool = False         # may the client connection be reused?
     error: Optional[str] = None
-    error_kind: Optional[str] = None  # "backend" or "client"
 
 
 class _BackendError(Exception):
@@ -56,9 +55,8 @@ async def _backend_io(coro: Any, timeout: float) -> Any:
         raise _BackendError(502, f"backend error: {e!r}") from None
 
 
-async def _relay_chunked(src: asyncio.StreamReader, dst: asyncio.StreamWriter, timeout: float,
-                         framed: bool) -> int:
-    """Copy a chunked body. framed=True passes it through unchanged; False strips the chunk framing."""
+async def _relay_chunked(src: asyncio.StreamReader, dst: asyncio.StreamWriter, timeout: float) -> int:
+    """Copy a chunked body to the client unchanged, up to and including the last chunk and trailers."""
     sent = 0
     while True:
         line = await _backend_io(src.readline(), timeout)
@@ -68,21 +66,19 @@ async def _relay_chunked(src: asyncio.StreamReader, dst: asyncio.StreamWriter, t
             size = int(line.split(b";")[0].strip(), 16)
         except ValueError:
             raise _BackendError(502, "bad chunk size") from None
-        if framed:
-            await _to_client(dst, line)
-            sent += len(line)
+        await _to_client(dst, line)
+        sent += len(line)
         if size == 0:
             while True:  # trailers, up to the blank line
                 trailer = await _backend_io(src.readline(), timeout)
-                if framed and trailer:
+                if trailer:
                     await _to_client(dst, trailer)
                     sent += len(trailer)
                 if trailer in (b"\r\n", b"\n", b""):
                     return sent
         data = await _backend_io(src.readexactly(size + 2), timeout)  # chunk + its CRLF
-        out = data if framed else data[:-2]
-        await _to_client(dst, out)
-        sent += len(out)
+        await _to_client(dst, data)
+        sent += len(data)
 
 
 async def _relay_length(src: asyncio.StreamReader, dst: asyncio.StreamWriter, n: int, timeout: float) -> int:
@@ -142,23 +138,19 @@ async def forward(req: Request, backend: Any, client_reader: asyncio.StreamReade
             await _backend_io(bwriter.drain(), t_read)
         await _backend_io(bwriter.drain(), t_read)
 
-        # 3. response head (skip any 1xx interim responses)
-        while True:
-            raw = await _backend_io(breader.readuntil(b"\r\n\r\n"), t_read)
-            try:
-                status, reason, headers = parse_response_head(raw)
-                mode, length = response_body_mode(req.method, status, headers)
-            except ValueError as e:
-                raise _BackendError(502, f"bad backend response: {e}") from None
-            if not 100 <= status < 200:
-                break
+        # 3. response head (no 1xx handling: we never send Expect, so the backend has no reason to)
+        raw = await _backend_io(breader.readuntil(b"\r\n\r\n"), t_read)
+        try:
+            status, reason, headers = parse_response_head(raw)
+            mode, length = response_body_mode(req.method, status, headers)
+        except ValueError as e:
+            raise _BackendError(502, f"bad backend response: {e}") from None
 
         # 4. send head to the client, then relay the body with the right framing
-        dechunk = mode == "chunked" and req.version == "HTTP/1.0"   # HTTP/1.0 clients cannot parse chunked
-        keep = client_ka and mode != "close" and not dechunk
+        keep = client_ka and mode != "close"
         out = [f"HTTP/1.1 {status} {reason}"]
         out += [f"{k}: {v}" for k, v in strip_hop_by_hop(headers)]
-        if mode == "chunked" and not dechunk:
+        if mode == "chunked":
             out.append("Transfer-Encoding: chunked")
         out.append(f"Connection: {'keep-alive' if keep else 'close'}")
         data = ("\r\n".join(out) + "\r\n\r\n").encode("latin-1")
@@ -170,13 +162,13 @@ async def forward(req: Request, backend: Any, client_reader: asyncio.StreamReade
         if mode == "length":
             res.bytes_down += await _relay_length(breader, client_writer, length, t_read)
         elif mode == "chunked":
-            res.bytes_down += await _relay_chunked(breader, client_writer, t_read, framed=not dechunk)
+            res.bytes_down += await _relay_chunked(breader, client_writer, t_read)
         elif mode == "close":
             res.bytes_down += await _relay_until_close(breader, client_writer, t_read)
         res.keep_alive = keep and body_left == 0
 
     except _BackendError as e:
-        res.status, res.error, res.error_kind = e.status, str(e), "backend"
+        res.status, res.error = e.status, str(e)
         if not head_sent:  # a half-sent response cannot be fixed with an error page; we just close
             keep = client_ka and body_left == 0
             try:
@@ -187,7 +179,7 @@ async def forward(req: Request, backend: Any, client_reader: asyncio.StreamReade
             except _ClientGone:
                 pass
     except _ClientGone as e:
-        res.status, res.error, res.error_kind = 499, str(e), "client"
+        res.status, res.error = 499, str(e)  # 499 = client left; server.py logs it as client_error
     finally:
         if bwriter is not None:
             bwriter.close()

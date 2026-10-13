@@ -12,7 +12,7 @@ from lb.core.http_io import (
 )
 
 BACKLOG = 1024            # listen queue; the default 100 drops SYNs in a 500-connection burst
-DEFAULT_GRACE_S = 2.0     # time given to in-flight requests at shutdown (cfg["shutdown_grace_s"] overrides)
+GRACE_S = 2.0             # time given to in-flight requests at shutdown
 
 
 class _Proxy:
@@ -73,8 +73,7 @@ class _Proxy:
                 await writer.drain()
             except OSError:
                 keep = False
-            res = Result(status=503, bytes_down=len(data), keep_alive=keep, error="no healthy backends",
-                         error_kind="backend")
+            res = Result(status=503, bytes_down=len(data), keep_alive=keep, error="no healthy backends")
             backend_id = None
         else:
             backend_id = backend.id
@@ -84,7 +83,7 @@ class _Proxy:
             try:
                 res = await forward(req, backend, reader, writer, client_ip, self.timeouts)
             except Exception as e:  # bug guard: still count the request, then close
-                res = Result(status=500, error=repr(e), error_kind="backend")
+                res = Result(status=500, error=repr(e))
             finally:
                 self.pool.release(backend)  # always: `active` must never leak
 
@@ -94,7 +93,7 @@ class _Proxy:
                        status=res.status, latency_ms=round(latency_ms, 3),
                        bytes_up=res.bytes_up, bytes_down=res.bytes_down)
         if res.error:
-            self.log.event("backend_error" if res.error_kind == "backend" else "client_error",
+            self.log.event("client_error" if res.status == 499 else "backend_error",  # 499 = client left
                            client=client_ip, backend=backend_id, status=res.status, error=res.error)
         return res.keep_alive and not self.closing
 
@@ -145,7 +144,7 @@ async def serve(cfg: Mapping[str, Any], balancer: Any, pool: Any, log: Any, metr
             t.cancel()
         busy = proxy.tasks - proxy.idle
         if busy:                                         # 3. in-flight requests get a short grace period
-            await asyncio.wait(busy, timeout=cfg.get("shutdown_grace_s", DEFAULT_GRACE_S))
+            await asyncio.wait(busy, timeout=GRACE_S)
         for t in list(proxy.tasks):                      # 4. whatever is left is cancelled
             t.cancel()
         if proxy.tasks:

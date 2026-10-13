@@ -17,10 +17,9 @@ HOP_BY_HOP = {
     "proxy-connection", "te", "trailer", "transfer-encoding", "upgrade",
 }
 SUPPORTED_METHODS = {"GET", "HEAD", "POST", "PUT", "DELETE"}
-KNOWN_UNSUPPORTED = {"OPTIONS", "PATCH", "TRACE", "CONNECT"}  # -> 405, anything else -> 501
 
 REASONS = {
-    200: "OK", 400: "Bad Request", 405: "Method Not Allowed", 431: "Request Header Fields Too Large",
+    200: "OK", 400: "Bad Request", 431: "Request Header Fields Too Large",
     500: "Internal Server Error", 501: "Not Implemented", 502: "Bad Gateway",
     503: "Service Unavailable", 504: "Gateway Timeout", 505: "HTTP Version Not Supported",
 }
@@ -101,7 +100,7 @@ def parse_request_head(head: bytes) -> Request:
         length = int(raw)
 
     if method not in SUPPORTED_METHODS:
-        raise HttpError(405 if method in KNOWN_UNSUPPORTED else 501)
+        raise HttpError(501)  # any method outside GET/HEAD/POST/PUT/DELETE
     return Request(method, target, version, headers, length)
 
 

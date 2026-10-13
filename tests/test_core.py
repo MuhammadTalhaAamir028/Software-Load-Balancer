@@ -151,7 +151,7 @@ class CoreCase(unittest.IsolatedAsyncioTestCase):
         self.pool = FakePool(backends)
         self.port = free_port()
         cfg = {"listen": {"host": "127.0.0.1", "port": self.port},
-               "timeouts": timeouts or self.timeouts, "shutdown_grace_s": 1.0}
+               "timeouts": timeouts or self.timeouts}
         self.lb_task = asyncio.create_task(
             serve(cfg, FirstBalancer(), self.pool, self.log, self.metrics, stop=self.stop))
         for _ in range(100):  # wait until it accepts
@@ -272,13 +272,6 @@ class TestForwarding(CoreCase):
         self.assertEqual((status, body, headers["connection"]), (200, b"hello world", "keep-alive"))
         w.close()
 
-        # HTTP/1.0 client gets the chunk framing removed
-        r, w = await self.client()
-        w.write(b"GET / HTTP/1.0\r\n\r\n")
-        raw = await asyncio.wait_for(r.read(), 5)
-        self.assertTrue(raw.endswith(b"\r\n\r\nhello world"), raw)
-        w.close()
-
         b.port = (await self.start_backend(until_close)).port
         r, w = await self.client()
         w.write(b"GET / HTTP/1.1\r\nHost: lb\r\n\r\n")
@@ -397,7 +390,7 @@ class TestBadRequests(CoreCase):
             b"POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n"), 501)
 
     async def test_unsupported_methods(self):
-        self.assertEqual(await self._raw(b"PATCH / HTTP/1.1\r\nHost: x\r\n\r\n"), 405)
+        self.assertEqual(await self._raw(b"PATCH / HTTP/1.1\r\nHost: x\r\n\r\n"), 501)
 
     async def test_every_rejected_request_is_counted_once(self):
         await self._raw(b"NONSENSE\r\n\r\n")
