@@ -122,6 +122,7 @@ topology:
       exec: ["ip addr add 10.0.2.11/24 dev eth1", "ip link set eth1 up"]
     haproxy:
       image: ${HAPROXY_BASE_IMAGE}
+      user: root   # the image's default user (uid 99) cannot read a 0600 haproxy.cfg made by haproxy/render.sh
       network-mode: container:clab-lb-haproxy-net
       stages:
         create:
