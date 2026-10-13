@@ -9,3 +9,7 @@ logs/
 .pytest_cache/
 results/raw/
 # keep captures/*.pcapng tracked on purpose
+
+# topology runtime state
+topo/.netem_state
+topo/clab-*/
