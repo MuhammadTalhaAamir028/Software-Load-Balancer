@@ -18,8 +18,8 @@ from lb.core.server import serve
 FACTORIES = {
     "load_config": "lb.config",
     "make_balancer": "lb.balancing",
-    "make_pool": "lb.balancing.pool",
-    "make_health_checker": "lb.balancing.health",
+    "make_pool": "lb.balancing",
+    "make_health_checker": "lb.balancing",
     "make_logger": "lb.obs.logger",
     "make_metrics": "lb.obs.metrics",
     "start_stats_server": "lb.obs.stats_server",

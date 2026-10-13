@@ -48,7 +48,7 @@ SIGINT/SIGTERM (Linux) stop the listener, close idle keep-alive connections at o
 
 ## Assumptions to confirm with teammates
 - `backend_selected` is logged with `level="DEBUG"` as a normal field. Abdur's logger decides whether that filters it.
-- `make_balancer` is expected in `lb/balancing/__init__.py`. The contract only says "lb/balancing".
+- Factory locations (checked against `feat/balancing` and `feat/observability`): `make_balancer`, `make_pool`, `make_health_checker` are in `lb/balancing/__init__.py`; `load_config` in `lb/config.py`; logger, metrics and stats server in `lb/obs/`.
 - `serve()` has one extra optional argument `stop` (an `asyncio.Event`). The contract call still works.
 - `retry_on_connect_error` is ignored (no retry in v1).
 
