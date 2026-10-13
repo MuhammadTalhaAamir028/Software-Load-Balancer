@@ -10,6 +10,7 @@
 #   <name>-net   tiny container that owns the links, the IP address and the routes. Never stopped.
 #   <name>       the real application. Shares the holder's network. Kill and start it as often as you like.
 # `docker kill clab-lb-b3` therefore kills only the backend process, and `docker start clab-lb-b3` brings it back.
+# (network-mode needs the full container name, and `stages` makes the holder start first.)
 #
 # This file only gives nodes their link addresses. All routes are in topo/routes.sh.
 name: lb
@@ -102,7 +103,11 @@ topology:
       exec: ["ip addr add 10.0.2.10/24 dev eth1", "ip link set eth1 up"]
     lb:
       image: ${LB_BASE_IMAGE}
-      network-mode: container:lb-net
+      network-mode: container:clab-lb-lb-net
+      stages:
+        create:
+          wait-for:
+            - {node: lb-net, stage: create}
       cpu: ${LB_CPUS}
       binds:
         - ${LB_CODE_DIR}:/app
@@ -117,7 +122,11 @@ topology:
       exec: ["ip addr add 10.0.2.11/24 dev eth1", "ip link set eth1 up"]
     haproxy:
       image: ${HAPROXY_BASE_IMAGE}
-      network-mode: container:haproxy-net
+      network-mode: container:clab-lb-haproxy-net
+      stages:
+        create:
+          wait-for:
+            - {node: haproxy-net, stage: create}
       cpu: ${LB_CPUS}
       binds:
         - ${HAPROXY_DIR}:/cfg:ro
@@ -130,22 +139,38 @@ topology:
     b4-net: {image: "${FRR_IMAGE}", entrypoint: sleep, cmd: infinity, exec: ["ip addr add 10.0.3.14/24 dev eth1", "ip link set eth1 up"]}
     b1:
       image: ${BACKEND_IMAGE}
-      network-mode: container:b1-net
+      network-mode: container:clab-lb-b1-net
+      stages:
+        create:
+          wait-for:
+            - {node: b1-net, stage: create}
       cpu: ${B1_CPUS}
       env: {BACKEND_ID: b1, DELAY_MS: "${B1_DELAY_MS}", PORT: "8000"}
     b2:
       image: ${BACKEND_IMAGE}
-      network-mode: container:b2-net
+      network-mode: container:clab-lb-b2-net
+      stages:
+        create:
+          wait-for:
+            - {node: b2-net, stage: create}
       cpu: ${B2_CPUS}
       env: {BACKEND_ID: b2, DELAY_MS: "${B2_DELAY_MS}", PORT: "8000"}
     b3:
       image: ${BACKEND_IMAGE}
-      network-mode: container:b3-net
+      network-mode: container:clab-lb-b3-net
+      stages:
+        create:
+          wait-for:
+            - {node: b3-net, stage: create}
       cpu: ${B3_CPUS}
       env: {BACKEND_ID: b3, DELAY_MS: "${B3_DELAY_MS}", PORT: "8000"}
     b4:
       image: ${BACKEND_IMAGE}
-      network-mode: container:b4-net
+      network-mode: container:clab-lb-b4-net
+      stages:
+        create:
+          wait-for:
+            - {node: b4-net, stage: create}
       cpu: ${B4_CPUS}
       env: {BACKEND_ID: b4, DELAY_MS: "${B4_DELAY_MS}", PORT: "8000"}
 
