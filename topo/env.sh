@@ -22,6 +22,7 @@ LB_CODE_DIR=${LB_CODE_DIR:-$REPO_DIR}                          # must contain lb
 LB_CONFIG=${LB_CONFIG:-$REPO_DIR/config.example.json}          # backends 10.0.3.11-.14:8000, listen 8080
 HAPROXY_DIR=${HAPROXY_DIR:-$REPO_DIR/haproxy}                  # contains haproxy.cfg (made by haproxy/render.sh)
 LB_CPUS=${LB_CPUS:-1.0}                                        # same CPU limit for own LB and HAProxy (fairness)
+LB_USER=${LB_USER:-$(id -u):$(id -g)}                        # run the LB as you, so logs/ and caches in LB_CODE_DIR are not root-owned
 
 # ---- backend capacity table (values from backends/.env, Abdur) --------------
 B1_DELAY_MS=${B1_DELAY_MS:-5};   B1_CPUS=${B1_CPUS:-1.0}
@@ -42,7 +43,7 @@ BACKEND_NODES="b1 b2 b3 b4"
 # ---- helpers ------------------------------------------------------------------
 # Everything clab.yml expands with ${...} must be exported.
 export FRR_IMAGE CLIENT_IMAGE BACKEND_IMAGE LB_BASE_IMAGE HAPROXY_BASE_IMAGE
-export LB_CODE_DIR LB_CONFIG HAPROXY_DIR LB_CPUS
+export LB_CODE_DIR LB_CONFIG HAPROXY_DIR LB_CPUS LB_USER
 export B1_DELAY_MS B1_CPUS B2_DELAY_MS B2_CPUS B3_DELAY_MS B3_CPUS B4_DELAY_MS B4_CPUS
 
 die() { echo "error: $*" >&2; exit 1; }
