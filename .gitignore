@@ -11,3 +11,7 @@ results/raw/
 kill_ts.txt
 haproxy/haproxy.cfg
 # keep captures/*.pcapng tracked on purpose
+
+# topology runtime state
+topo/.netem_state
+topo/clab-*/

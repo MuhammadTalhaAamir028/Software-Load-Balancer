@@ -1,0 +1,163 @@
+# Routed topology for Project 5 (PRD section 6). Lab name `lb` -> containers are clab-lb-<node>.
+# Always start it with topo/build.sh: that script exports the ${VARIABLES} used below (see topo/env.sh).
+#
+#   clients 10.0.1.0/24          LB segment 10.0.2.0/24            backends 10.0.3.0/24
+#   c1..c4 --[sw-clients]-- R1 --[sw-lb (Linux bridge)]-- R2 --[sw-backends]-- b1..b4
+#                                    |-- lb (.10)  |-- haproxy (.11)
+#
+# HOLDERS. b1-b4, lb and haproxy are killed and restarted by the experiments (`docker kill`/`docker start`).
+# A container that is killed loses its network links for good. So each of them is split in two:
+#   <name>-net   tiny container that owns the links, the IP address and the routes. Never stopped.
+#   <name>       the real application. Shares the holder's network. Kill and start it as often as you like.
+# `docker kill clab-lb-b3` therefore kills only the backend process, and `docker start clab-lb-b3` brings it back.
+# (network-mode needs the full container name, and `stages` makes the holder start first.)
+#
+# This file only gives nodes their link addresses. All routes are in topo/routes.sh.
+name: lb
+
+topology:
+  defaults:
+    kind: linux
+
+  nodes:
+    # ---- routers (FRR, static routes via staticd) ------------------------------
+    r1:
+      image: ${FRR_IMAGE}
+      binds: [frr/daemons:/etc/frr/daemons:ro]
+      exec:
+        - ip addr add 10.0.1.1/24 dev eth1
+        - ip addr add 10.0.2.1/24 dev eth2
+        - ip link set eth1 up
+        - ip link set eth2 up
+    r2:
+      image: ${FRR_IMAGE}
+      binds: [frr/daemons:/etc/frr/daemons:ro]
+      exec:
+        - ip addr add 10.0.2.2/24 dev eth1
+        - ip addr add 10.0.3.1/24 dev eth2
+        - ip link set eth1 up
+        - ip link set eth2 up
+
+    # ---- L2 switches: one Linux bridge each. sw-lb is the 10.0.2.0/24 bridge from the PRD ----
+    sw-clients:
+      image: ${FRR_IMAGE}
+      entrypoint: sleep
+      cmd: infinity
+      exec: ["sh -c 'ip link add br-clients type bridge && ip link set br-clients up && ip link set eth1 master br-clients up && ip link set eth2 master br-clients up && ip link set eth3 master br-clients up && ip link set eth4 master br-clients up && ip link set eth5 master br-clients up'"]
+    sw-lb:
+      image: ${FRR_IMAGE}
+      entrypoint: sleep
+      cmd: infinity
+      exec: ["sh -c 'ip link add br-lb type bridge && ip link set br-lb up && ip link set eth1 master br-lb up && ip link set eth2 master br-lb up && ip link set eth3 master br-lb up && ip link set eth4 master br-lb up'"]
+    sw-backends:
+      image: ${FRR_IMAGE}
+      entrypoint: sleep
+      cmd: infinity
+      exec: ["sh -c 'ip link add br-backends type bridge && ip link set br-backends up && ip link set eth1 master br-backends up && ip link set eth2 master br-backends up && ip link set eth3 master br-backends up && ip link set eth4 master br-backends up && ip link set eth5 master br-backends up'"]
+
+    # ---- clients (Abdur's cn-lb-client image). Never killed, so no holder needed. ----
+    c1: {image: "${CLIENT_IMAGE}", exec: ["ip addr add 10.0.1.11/24 dev eth1", "ip link set eth1 up"]}
+    c2: {image: "${CLIENT_IMAGE}", exec: ["ip addr add 10.0.1.12/24 dev eth1", "ip link set eth1 up"]}
+    c3: {image: "${CLIENT_IMAGE}", exec: ["ip addr add 10.0.1.13/24 dev eth1", "ip link set eth1 up"]}
+    c4: {image: "${CLIENT_IMAGE}", exec: ["ip addr add 10.0.1.14/24 dev eth1", "ip link set eth1 up"]}
+
+    # ---- the two load balancers (only one is under test at a time; same CPU limit) -------
+    lb-net:
+      image: ${FRR_IMAGE}
+      entrypoint: sleep
+      cmd: infinity
+      exec: ["ip addr add 10.0.2.10/24 dev eth1", "ip link set eth1 up"]
+    lb:
+      image: ${LB_BASE_IMAGE}
+      user: ${LB_USER}
+      env: {PYTHONDONTWRITEBYTECODE: "1"}
+      network-mode: container:clab-lb-lb-net
+      stages:
+        create:
+          wait-for:
+            - {node: lb-net, stage: create}
+      cpu: ${LB_CPUS}
+      binds:
+        - ${LB_CODE_DIR}:/app
+        - ${LB_CONFIG}:/etc/lb/config.json:ro
+      # If the code is incomplete the container stays alive, so `docker exec` still works.
+      cmd: sh -c 'cd /app && python -m lb --config /etc/lb/config.json; echo "lb exited, idling"; exec sleep infinity'
+
+    haproxy-net:
+      image: ${FRR_IMAGE}
+      entrypoint: sleep
+      cmd: infinity
+      exec: ["ip addr add 10.0.2.11/24 dev eth1", "ip link set eth1 up"]
+    haproxy:
+      image: ${HAPROXY_BASE_IMAGE}
+      user: root   # the image's default user (uid 99) cannot read a 0600 haproxy.cfg made by haproxy/render.sh
+      network-mode: container:clab-lb-haproxy-net
+      stages:
+        create:
+          wait-for:
+            - {node: haproxy-net, stage: create}
+      cpu: ${LB_CPUS}
+      binds:
+        - ${HAPROXY_DIR}:/cfg:ro
+      cmd: sh -c 'if [ -f /cfg/haproxy.cfg ]; then exec haproxy -f /cfg/haproxy.cfg; else echo "no haproxy.cfg, idling"; exec sleep infinity; fi'
+
+    # ---- backends (Abdur's image; delay and CPU from topo/env.sh) ---------------------
+    b1-net: {image: "${FRR_IMAGE}", entrypoint: sleep, cmd: infinity, exec: ["ip addr add 10.0.3.11/24 dev eth1", "ip link set eth1 up"]}
+    b2-net: {image: "${FRR_IMAGE}", entrypoint: sleep, cmd: infinity, exec: ["ip addr add 10.0.3.12/24 dev eth1", "ip link set eth1 up"]}
+    b3-net: {image: "${FRR_IMAGE}", entrypoint: sleep, cmd: infinity, exec: ["ip addr add 10.0.3.13/24 dev eth1", "ip link set eth1 up"]}
+    b4-net: {image: "${FRR_IMAGE}", entrypoint: sleep, cmd: infinity, exec: ["ip addr add 10.0.3.14/24 dev eth1", "ip link set eth1 up"]}
+    b1:
+      image: ${BACKEND_IMAGE}
+      network-mode: container:clab-lb-b1-net
+      stages:
+        create:
+          wait-for:
+            - {node: b1-net, stage: create}
+      cpu: ${B1_CPUS}
+      env: {BACKEND_ID: b1, DELAY_MS: "${B1_DELAY_MS}", PORT: "8000"}
+    b2:
+      image: ${BACKEND_IMAGE}
+      network-mode: container:clab-lb-b2-net
+      stages:
+        create:
+          wait-for:
+            - {node: b2-net, stage: create}
+      cpu: ${B2_CPUS}
+      env: {BACKEND_ID: b2, DELAY_MS: "${B2_DELAY_MS}", PORT: "8000"}
+    b3:
+      image: ${BACKEND_IMAGE}
+      network-mode: container:clab-lb-b3-net
+      stages:
+        create:
+          wait-for:
+            - {node: b3-net, stage: create}
+      cpu: ${B3_CPUS}
+      env: {BACKEND_ID: b3, DELAY_MS: "${B3_DELAY_MS}", PORT: "8000"}
+    b4:
+      image: ${BACKEND_IMAGE}
+      network-mode: container:clab-lb-b4-net
+      stages:
+        create:
+          wait-for:
+            - {node: b4-net, stage: create}
+      cpu: ${B4_CPUS}
+      env: {BACKEND_ID: b4, DELAY_MS: "${B4_DELAY_MS}", PORT: "8000"}
+
+  links:
+    # clients segment: R1 eth1 and c1-c4 on sw-clients
+    - endpoints: ["r1:eth1", "sw-clients:eth1"]
+    - endpoints: ["c1:eth1", "sw-clients:eth2"]
+    - endpoints: ["c2:eth1", "sw-clients:eth3"]
+    - endpoints: ["c3:eth1", "sw-clients:eth4"]
+    - endpoints: ["c4:eth1", "sw-clients:eth5"]
+    # LB segment: R1 eth2, R2 eth1, lb, haproxy on sw-lb (the 10.0.2.0/24 bridge)
+    - endpoints: ["r1:eth2", "sw-lb:eth1"]
+    - endpoints: ["r2:eth1", "sw-lb:eth2"]
+    - endpoints: ["lb-net:eth1", "sw-lb:eth3"]
+    - endpoints: ["haproxy-net:eth1", "sw-lb:eth4"]
+    # backends segment: R2 eth2 and b1-b4 on sw-backends
+    - endpoints: ["r2:eth2", "sw-backends:eth1"]
+    - endpoints: ["b1-net:eth1", "sw-backends:eth2"]
+    - endpoints: ["b2-net:eth1", "sw-backends:eth3"]
+    - endpoints: ["b3-net:eth1", "sw-backends:eth4"]
+    - endpoints: ["b4-net:eth1", "sw-backends:eth5"]

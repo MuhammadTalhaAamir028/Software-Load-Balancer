@@ -1,0 +1,119 @@
+Environment
+===========
+distro: Ubuntu 24.04.5 LTS (WSL2)
+kernel: 6.6.87.2-microsoft-standard-WSL2
+Python: 3.12.3
+PyYAML: yes
+nproc: 16
+
+Full smoke output
+=================
+Python: 3.12.3
+Platform: Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+WSL (/proc/version mentions microsoft): yes
+nproc: 16
+seed: 20261010
+kill time = just before FakeBackend.stop() or the mode switch is issued, so detection times are conservative (slightly high)
+
+S1: short stop detection
+trial  detection_s  recovery_s  reason
+-----  -----------  ----------  ------
+    1        0.246       0.147  3 consecutive failures: refused
+    2        0.270       0.190  3 consecutive failures: refused
+    3        0.251       0.130  3 consecutive failures: refused
+    4        0.223       0.118  3 consecutive failures: refused
+    5        0.263       0.104  3 consecutive failures: refused
+    6        0.241       0.203  3 consecutive failures: refused
+    7        0.248       0.191  3 consecutive failures: refused
+    8        0.272       0.200  3 consecutive failures: refused
+    9        0.272       0.177  3 consecutive failures: refused
+   10        0.206       0.125  3 consecutive failures: refused
+detection min/mean/max: 0.206 / 0.249 / 0.272 s; stdev: 0.022 s
+recovery min/mean/max: 0.104 / 0.158 / 0.203 s; stdev: 0.038 s
+detection expected range: 0.20 to 0.35 s; verdict: WITHIN
+recovery expected range: 0.10 to 0.20 s; verdict: WITHIN
+
+S4 phase: all healthy
+round_robin: counts={'b1': 800, 'b2': 800, 'b3': 800, 'b4': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+least_conn: counts={'b1': 800, 'b2': 800, 'b3': 800, 'b4': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+ip_hash: counts={'b2': 2400, 'b3': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+  mapping={'10.0.1.11': 'b3', '10.0.1.12': 'b2', '10.0.1.13': 'b2', '10.0.1.14': 'b2'}; table_match=True
+
+S4 phase: b3 down
+round_robin: counts={'b1': 1067, 'b2': 1067, 'b4': 1066}
+  healthy=['b1', 'b2', 'b4']
+least_conn: counts={'b1': 1200, 'b2': 1200, 'b4': 800}
+  healthy=['b1', 'b2', 'b4']
+ip_hash: counts={'b1': 1600, 'b2': 1600}
+  healthy=['b1', 'b2', 'b4']
+  mapping={'10.0.1.11': 'b1', '10.0.1.12': 'b1', '10.0.1.13': 'b2', '10.0.1.14': 'b2'}; table_match=True
+
+S4 phase: recovered
+round_robin: counts={'b1': 800, 'b2': 800, 'b3': 800, 'b4': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+least_conn: counts={'b1': 800, 'b2': 800, 'b3': 800, 'b4': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+ip_hash: counts={'b2': 2400, 'b3': 800}
+  healthy=['b1', 'b2', 'b3', 'b4']
+  mapping={'10.0.1.11': 'b3', '10.0.1.12': 'b2', '10.0.1.13': 'b2', '10.0.1.14': 'b2'}; table_match=True
+
+S4 verification:
+b3 selections while down: 0; verdict=PASS
+backend_down events for b3: 1; reason=3 consecutive failures: refused
+backend_up events for b3: 1; reason=recovered
+metrics transitions: [('b3', False, '3 consecutive failures: refused'), ('b3', True, 'recovered')]
+S4 verdict: PASS
+
+S2: real stop detection
+trial  detection_s  recovery_s  reason
+-----  -----------  ----------  ------
+    1        2.589       1.206  3 consecutive failures: refused
+    2        2.988       1.943  3 consecutive failures: refused
+    3        2.171       1.457  3 consecutive failures: refused
+    4        2.919       1.772  3 consecutive failures: refused
+    5        2.937       1.762  3 consecutive failures: refused
+    6        2.101       1.432  3 consecutive failures: refused
+    7        2.919       1.443  3 consecutive failures: refused
+    8        2.340       1.553  3 consecutive failures: refused
+    9        2.259       1.863  3 consecutive failures: refused
+   10        2.108       1.143  3 consecutive failures: refused
+detection min/mean/max: 2.101 / 2.533 / 2.988 s; stdev: 0.377 s
+recovery min/mean/max: 1.143 / 1.557 / 1.943 s; stdev: 0.272 s
+detection expected range: 2.00 to 3.50 s; verdict: WITHIN
+recovery expected range: 1.00 to 2.00 s; verdict: WITHIN
+
+S2b: real silent-death detection
+trial  detection_s  recovery_s  reason
+-----  -----------  ----------  ------
+    1        2.886       1.302  3 consecutive failures: timeout
+    2        2.608       1.585  3 consecutive failures: timeout
+    3        3.169       1.021  3 consecutive failures: timeout
+    4        3.077       1.878  3 consecutive failures: timeout
+    5        2.897       1.664  3 consecutive failures: timeout
+detection min/mean/max: 2.608 / 2.928 / 3.169 s; stdev: 0.215 s
+recovery min/mean/max: 1.021 / 1.490 / 1.878 s; stdev: 0.334 s
+detection expected range: 2.50 to 3.50 s; verdict: WITHIN
+recovery expected range: 1.00 to 2.00 s; verdict: WITHIN
+
+S3: recovery summary
+setting      min/mean/max_s       stdev_s  verdict
+-----------  -------------------  -------  -------
+S1 short     0.104/0.158/0.203  0.038   WITHIN
+S2 real      1.143/1.557/1.943  0.272   WITHIN
+S2b blackhole  1.021/1.490/1.878  0.334   WITHIN
+Recovery restart phase is randomized after backend_down so each trial samples the scheduling interval.
+SMOKE_EXIT=0
+
+
+Numbers for the PR report
+==========================
+S1 short detection: min/mean/max/stdev = 0.206/0.249/0.272/0.022 s; verdict WITHIN.
+S1 short recovery: min/mean/max/stdev = 0.104/0.158/0.203/0.038 s; verdict WITHIN with the 0.05 s tolerance.
+S2 real refusal detection: min/mean/max/stdev = 2.101/2.533/2.988/0.377 s; verdict WITHIN.
+S2 real refusal recovery: min/mean/max/stdev = 1.143/1.557/1.943/0.272 s; verdict WITHIN.
+S2b silent-death detection: min/mean/max/stdev = 2.608/2.928/3.169/0.215 s; verdict WITHIN.
+S2b silent-death recovery: min/mean/max/stdev = 1.021/1.490/1.878/0.334 s; verdict WITHIN.
+Observed refusal reason on Linux: refused; silent-death reason: timeout.
