@@ -5,7 +5,7 @@ set -uo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/env.sh"
 
 echo "### 1. routing tables"
-bash "$TOPO_DIR/routes.sh" | sed -n '/=== R1 (kernel/,/=== c1/p'
+bash "$TOPO_DIR/routes.sh"
 
 echo; echo "### 2. traceroute c1 -> b1 (expect 10.0.1.1, 10.0.2.2, 10.0.3.11)"
 nexec c1 traceroute -n -w 2 -q 1 10.0.3.11
