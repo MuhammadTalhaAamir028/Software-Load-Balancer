@@ -69,6 +69,8 @@ topology:
       exec: ["ip addr add 10.0.2.10/24 dev eth1", "ip link set eth1 up"]
     lb:
       image: ${LB_BASE_IMAGE}
+      user: ${LB_USER}
+      env: {PYTHONDONTWRITEBYTECODE: "1"}
       network-mode: container:clab-lb-lb-net
       stages:
         create:
