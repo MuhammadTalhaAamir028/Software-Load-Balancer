@@ -46,6 +46,9 @@ trap cleanup EXIT
 
 ALGO="$haproxy_algo" envsubst '${ALGO}' \
   < "$script_dir/haproxy.cfg.tmpl" > "$tmp_cfg"
+# The HAProxy image validates as a non-root user, so the bind-mounted config
+# must be readable by users other than the file owner.
+chmod 644 "$tmp_cfg"
 
 container_cfg="/usr/local/etc/haproxy/haproxy.cfg"
 if [ -n "${MSYSTEM:-}" ] && command -v cygpath >/dev/null 2>&1; then
