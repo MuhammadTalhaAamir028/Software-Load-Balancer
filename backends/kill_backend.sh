@@ -49,16 +49,16 @@ if [ "$running" != "true" ]; then
   exit 1
 fi
 
-# "date -u +%s%3N" prints the UTC time in milliseconds since 1970-01-01.
-# %s = whole seconds, %3N = the first three digits of the nanoseconds.
+# "date -u +%s%N" prints nanoseconds since 1970-01-01; dividing by 1,000,000 gives
+# milliseconds. (%3N is avoided: uutils date, the default on Ubuntu 25.10+, ignores the width.)
 # It is captured IMMEDIATELY before docker kill, so the value can only be
 # earlier than the real kill, never later.
-kill_ms="$(date -u +%s%3N)"
+kill_ms="$(( $(date -u +%s%N) / 1000000 ))"
 
 # Guard against a date implementation without %N support (for example BSD/macOS),
 # which would print a malformed number. A valid value has exactly 13 digits.
 if ! [[ "$kill_ms" =~ ^[0-9]{13}$ ]]; then
-  echo "error: 'date +%s%3N' returned '$kill_ms' (GNU date is required)" >&2
+  echo "error: 'date +%s%N' returned '$kill_ms' (a date with %N support is required)" >&2
   exit 1
 fi
 
