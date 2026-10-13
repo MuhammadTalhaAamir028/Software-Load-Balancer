@@ -11,22 +11,16 @@ command -v containerlab >/dev/null  || die "containerlab not found"
 
 # 1. Images we do not build ourselves.
 docker image inspect "$FRR_IMAGE" >/dev/null 2>&1 || { echo "pulling $FRR_IMAGE"; docker pull -q "$FRR_IMAGE" >/dev/null; }
+for img in "$LB_BASE_IMAGE" "$HAPROXY_BASE_IMAGE"; do
+  docker image inspect "$img" >/dev/null 2>&1 || { echo "pulling $img"; docker pull -q "$img" >/dev/null; }
+done
 for img in "$CLIENT_IMAGE" "$BACKEND_IMAGE"; do
   docker image inspect "$img" >/dev/null 2>&1 \
     || die "image $img is missing. It belongs to Abdur (see backends/ and bench/client/). Build it or set the variable in topo/env.sh."
 done
 
-# 2. Images with `ip` added (cached by Docker, so this is fast after the first time).
-build_node() { # build_node <base> <result>
-  docker build -q --build-arg BASE="$1" -t "$2" -f "$TOPO_DIR/Dockerfile.node" "$TOPO_DIR" >/dev/null
-  echo "built $2 (from $1)"
-}
-build_node "$BACKEND_IMAGE"     "$BACKEND_NET_IMAGE"
-build_node "$LB_BASE_IMAGE"     "$LB_NET_IMAGE"
-build_node "$HAPROXY_BASE_IMAGE" "$HAPROXY_NET_IMAGE"
-
-# 3. Deploy. --reconfigure removes an old copy of the lab first.
+# 2. Deploy. --reconfigure removes an old copy of the lab first.
 containerlab deploy -t "$CLAB_FILE" --reconfigure
 
-# 4. Routes (clab.yml only sets addresses).
+# 3. Routes (clab.yml only sets addresses).
 bash "$TOPO_DIR/routes.sh"

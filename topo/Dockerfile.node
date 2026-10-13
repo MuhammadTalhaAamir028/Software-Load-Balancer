@@ -1,9 +1,0 @@
-# Adds the `ip` command to a slim image so containerlab can give the container an address.
-# Used for the backend, own-LB and HAProxy images. Built by topo/build.sh with --build-arg BASE=<image>.
-# The application, its CMD and its environment are untouched.
-ARG BASE
-FROM ${BASE}
-USER root
-RUN apt-get update \
- && apt-get install -y --no-install-recommends iproute2 \
- && rm -rf /var/lib/apt/lists/*
