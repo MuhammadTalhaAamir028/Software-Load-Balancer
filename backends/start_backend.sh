@@ -60,9 +60,9 @@ until docker exec "$container" python -c "$probe" >/dev/null 2>&1; do
   sleep 0.2
 done
 
-up_ms="$(date -u +%s%3N)"
+up_ms="$(( $(date -u +%s%N) / 1000000 ))"
 if ! [[ "$up_ms" =~ ^[0-9]{13}$ ]]; then
-  echo "error: 'date +%s%3N' returned '$up_ms' (GNU date is required)" >&2
+  echo "error: 'date +%s%N' returned '$up_ms' (a date with %N support is required)" >&2
   exit 1
 fi
 
