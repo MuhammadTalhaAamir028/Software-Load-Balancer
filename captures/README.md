@@ -26,7 +26,7 @@ wait
 
 ## 2. `lb_backend_forward` - the request the LB sends to a backend
 ```bash
-bash topo/capture.sh lb_backend_forward lb eth1 "tcp port 8000 and not host 10.0.3.13" 8 &
+bash topo/capture.sh lb_backend_forward lb eth1 "tcp port 8000" 8 &
 sleep 2
 docker exec clab-lb-c1 curl -s -o /dev/null http://10.0.2.10:8080/
 wait
