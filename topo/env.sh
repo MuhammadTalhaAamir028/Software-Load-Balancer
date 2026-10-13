@@ -30,11 +30,11 @@ B3_DELAY_MS=${B3_DELAY_MS:-25};  B3_CPUS=${B3_CPUS:-0.5}
 B4_DELAY_MS=${B4_DELAY_MS:-50};  B4_CPUS=${B4_CPUS:-0.25}
 
 # ---- addressing (PRD section 6) ----------------------------------------------
-NET_CLIENTS=10.0.1.0/24; NET_LB=10.0.2.0/24; NET_BACKENDS=10.0.3.0/24
+NET_CLIENTS=10.0.1.0/24; NET_BACKENDS=10.0.3.0/24
 R1_CLIENT_IP=10.0.1.1;  R1_LB_IP=10.0.2.1     # R1 eth1 / eth2
 R2_LB_IP=10.0.2.2;      R2_BACKEND_IP=10.0.3.1 # R2 eth1 / eth2
 R1_CLIENT_IF=eth1;      R1_LB_IF=eth2          # netem goes on these two (egress)
-LB_IP=10.0.2.10; HAPROXY_IP=10.0.2.11
+LB_IP=10.0.2.10
 LB_PORT=8080
 CLIENT_NODES="c1 c2 c3 c4"
 BACKEND_NODES="b1 b2 b3 b4"
