@@ -1,0 +1,259 @@
+date: 2026-10-11
+distro: Ubuntu 24.04.5 LTS (WSL2)
+kernel: 6.6.87.2-microsoft-standard-WSL2
+Python: 3.12.3
+command: python3 -m unittest discover -s tests -t . -v 2>&1
+PyYAML: yes
+
+Full verbose output
+====================
+test_empty_list_and_tuple_return_none (tests.test_balancing.TestCommon.test_empty_list_and_tuple_return_none) ... ok
+test_healthy_is_not_checked_or_filtered (tests.test_balancing.TestCommon.test_healthy_is_not_checked_or_filtered) ... ok
+test_names_and_select_signatures_are_consistent (tests.test_balancing.TestCommon.test_names_and_select_signatures_are_consistent) ... ok
+test_one_backend_is_always_selected (tests.test_balancing.TestCommon.test_one_backend_is_always_selected) ... ok
+test_selection_accepts_tuple_sequences (tests.test_balancing.TestCommon.test_selection_accepts_tuple_sequences) ... ok
+test_selection_does_not_mutate_backends_or_order (tests.test_balancing.TestCommon.test_selection_does_not_mutate_backends_or_order) ... ok
+test_factory_rejects_invalid_names (tests.test_balancing.TestFactory.test_factory_rejects_invalid_names) ... ok
+test_factory_returns_expected_classes (tests.test_balancing.TestFactory.test_factory_returns_expected_classes) ... ok
+test_factory_returns_independent_instances (tests.test_balancing.TestFactory.test_factory_returns_independent_instances) ... ok
+test_exact_mapping_with_b3_removed (tests.test_balancing.TestIpHash.test_exact_mapping_with_b3_removed) ... ok
+test_exact_mapping_with_four_healthy_backends (tests.test_balancing.TestIpHash.test_exact_mapping_with_four_healthy_backends) ... ok
+test_hash_is_stable_across_python_processes (tests.test_balancing.TestIpHash.test_hash_is_stable_across_python_processes) ... ok
+test_hash_spread_is_reasonable_for_four_and_three_backends (tests.test_balancing.TestIpHash.test_hash_spread_is_reasonable_for_four_and_three_backends) ... ok
+test_instances_are_stateless (tests.test_balancing.TestIpHash.test_instances_are_stateless) ... ok
+test_ipv6_and_odd_inputs_do_not_crash (tests.test_balancing.TestIpHash.test_ipv6_and_odd_inputs_do_not_crash) ... ok
+test_ipv6_spellings_normalize_to_the_same_backend (tests.test_balancing.TestIpHash.test_ipv6_spellings_normalize_to_the_same_backend) ... ok
+test_returns_original_backend_and_has_name (tests.test_balancing.TestIpHash.test_returns_original_backend_and_has_name) ... ok
+test_same_ip_is_stable (tests.test_balancing.TestIpHash.test_same_ip_is_stable) ... ok
+test_shrinking_the_healthy_set_reshuffles_clients (tests.test_balancing.TestIpHash.test_shrinking_the_healthy_set_reshuffles_clients) ... ok
+test_active_vectors_select_expected_backend (tests.test_balancing.TestLeastConnections.test_active_vectors_select_expected_backend) ... ok
+test_brief_example_uses_first_tied_minimum (tests.test_balancing.TestLeastConnections.test_brief_example_uses_first_tied_minimum) ... ok
+test_client_ip_is_unused_and_identity_is_preserved (tests.test_balancing.TestLeastConnections.test_client_ip_is_unused_and_identity_is_preserved) ... ok
+test_name_is_least_conn (tests.test_balancing.TestLeastConnections.test_name_is_least_conn) ... ok
+test_simulation_balances_equal_backends (tests.test_balancing.TestLeastConnections.test_simulation_balances_equal_backends) ... ok
+test_ties_are_deterministic_over_repeated_calls (tests.test_balancing.TestLeastConnections.test_ties_are_deterministic_over_repeated_calls) ... ok
+test_even_split_is_exact (tests.test_balancing.TestRoundRobin.test_even_split_is_exact) ... ok
+test_fairness_survives_removal_and_readdition (tests.test_balancing.TestRoundRobin.test_fairness_survives_removal_and_readdition) ... ok
+test_first_six_selections_rotate_in_order (tests.test_balancing.TestRoundRobin.test_first_six_selections_rotate_in_order) ... ok
+test_instances_have_independent_counters (tests.test_balancing.TestRoundRobin.test_instances_have_independent_counters) ... ok
+test_name_is_round_robin (tests.test_balancing.TestRoundRobin.test_name_is_round_robin) ... ok
+test_returns_the_original_backend_object (tests.test_balancing.TestRoundRobin.test_returns_the_original_backend_object) ... ok
+test_independent_errors_are_aggregated (tests.test_config.TestAggregationAndImmutability.test_independent_errors_are_aggregated) ... ok
+test_input_is_not_mutated_and_result_is_independent (tests.test_config.TestAggregationAndImmutability.test_input_is_not_mutated_and_result_is_independent) ... ok
+test_repeated_validation_is_equal (tests.test_config.TestAggregationAndImmutability.test_repeated_validation_is_equal) ... ok
+test_backend_count_duplicate_ids_and_id_regex (tests.test_config.TestBackends.test_backend_count_duplicate_ids_and_id_regex) ... ok
+test_backend_list_accepts_one_and_eight_entries (tests.test_config.TestBackends.test_backend_list_accepts_one_and_eight_entries) ... ok
+test_required_backend_fields_report_entry_paths (tests.test_config.TestBackends.test_required_backend_fields_report_entry_paths) ... ok
+test_health_timeout_must_be_less_than_interval (tests.test_config.TestCrossFieldRules.test_health_timeout_must_be_less_than_interval) ... ok
+test_invalid_timeout_does_not_add_cross_field_error (tests.test_config.TestCrossFieldRules.test_invalid_timeout_does_not_add_cross_field_error) ... ok
+test_listen_and_stats_ports_must_differ_including_defaults (tests.test_config.TestCrossFieldRules.test_listen_and_stats_ports_must_differ_including_defaults) ... ok
+test_algorithms_and_backend_order (tests.test_config.TestDefaults.test_algorithms_and_backend_order) ... ok
+test_minimal_config_gets_all_defaults (tests.test_config.TestDefaults.test_minimal_config_gets_all_defaults) ... ok
+test_partial_sections_fill_only_missing_keys (tests.test_config.TestDefaults.test_partial_sections_fill_only_missing_keys) ... ok
+test_valid_example_equals_input_plus_retry_default (tests.test_config.TestDefaults.test_valid_example_equals_input_plus_retry_default) ... ok
+test_health_path_and_positive_values (tests.test_config.TestHealthAndTimeouts.test_health_path_and_positive_values) ... ok
+test_logging_levels_normalize_and_reject_invalid_values (tests.test_config.TestHealthAndTimeouts.test_logging_levels_normalize_and_reject_invalid_values) ... ok
+test_retry_on_connect_error_requires_real_bool (tests.test_config.TestHealthAndTimeouts.test_retry_on_connect_error_requires_real_bool) ... ok
+test_file_validation_error_contains_path_and_all_problems (tests.test_config.TestLoadFile.test_file_validation_error_contains_path_and_all_problems) ... ok
+test_json_top_level_list_and_config_error_inherit_value_error (tests.test_config.TestLoadFile.test_json_top_level_list_and_config_error_inherit_value_error) ... ok
+test_missing_empty_whitespace_invalid_and_unsupported_files_raise_config_error (tests.test_config.TestLoadFile.test_missing_empty_whitespace_invalid_and_unsupported_files_raise_config_error) ... ok
+test_repository_example_loads_when_present (tests.test_config.TestLoadFile.test_repository_example_loads_when_present) ... ok
+test_valid_json_accepts_string_and_path (tests.test_config.TestLoadFile.test_valid_json_accepts_string_and_path) ... ok
+test_bool_where_float_is_expected_is_rejected (tests.test_config.TestTypesAndBools.test_bool_where_float_is_expected_is_rejected) ... ok
+test_bool_where_integer_is_expected_is_rejected (tests.test_config.TestTypesAndBools.test_bool_where_integer_is_expected_is_rejected) ... ok
+test_int_where_float_is_expected_becomes_float (tests.test_config.TestTypesAndBools.test_int_where_float_is_expected_becomes_float) ... ok
+test_non_object_sections_and_non_string_values_are_rejected (tests.test_config.TestTypesAndBools.test_non_object_sections_and_non_string_values_are_rejected) ... ok
+test_ports_require_integer_range (tests.test_config.TestTypesAndBools.test_ports_require_integer_range) ... ok
+test_unknown_nested_keys_are_rejected (tests.test_config.TestUnknownKeys.test_unknown_nested_keys_are_rejected) ... ok
+test_unknown_top_level_key_is_rejected (tests.test_config.TestUnknownKeys.test_unknown_top_level_key_is_rejected) ... ok
+test_missing_pyyaml_has_clear_error_for_both_extensions (tests.test_config.TestYaml.test_missing_pyyaml_has_clear_error_for_both_extensions) ... ok
+test_valid_yaml_matches_json_when_pyyaml_is_installed (tests.test_config.TestYaml.test_valid_yaml_matches_json_when_pyyaml_is_installed) ... ok
+test_checker_only_calls_pool_set_health (tests.test_health.HealthTestCase.test_checker_only_calls_pool_set_health) ... ok
+test_counters_are_per_backend_and_order_is_preserved (tests.test_health.HealthTestCase.test_counters_are_per_backend_and_order_is_preserved) ... ok
+test_custom_thresholds_are_used (tests.test_health.HealthTestCase.test_custom_thresholds_are_used) ... ok
+test_down_after_exactly_three_failures (tests.test_health.HealthTestCase.test_down_after_exactly_three_failures) ... ok
+test_down_backend_keeps_failing_without_second_transition (tests.test_health.HealthTestCase.test_down_backend_keeps_failing_without_second_transition) ... ok
+test_exception_mapping_in_probe (tests.test_health.HealthTestCase.test_exception_mapping_in_probe) ... ok
+test_external_cancellation_cleans_checker_tasks (tests.test_health.HealthTestCase.test_external_cancellation_cleans_checker_tasks) ... ok
+test_failure_rtt_reaches_timeout_but_success_is_fast (tests.test_health.HealthTestCase.test_failure_rtt_reaches_timeout_but_success_is_fast) ... ok
+test_failures_do_not_stop_the_loop (tests.test_health.HealthTestCase.test_failures_do_not_stop_the_loop) ... ok
+test_fake_backend_mode_reasons (tests.test_health.HealthTestCase.test_fake_backend_mode_reasons) ... ok
+test_first_round_is_immediate (tests.test_health.HealthTestCase.test_first_round_is_immediate) ... ok
+test_flapping_never_drops (tests.test_health.HealthTestCase.test_flapping_never_drops) ... ok
+test_hung_backends_are_probed_concurrently (tests.test_health.HealthTestCase.test_hung_backends_are_probed_concurrently) ... ok
+test_large_head_parses_first_line_without_terminator (tests.test_health.HealthTestCase.test_large_head_parses_first_line_without_terminator) ... ok
+test_late_round_resync_skips_missed_ticks (tests.test_health.HealthTestCase.test_late_round_resync_skips_missed_ticks) ... Executing <TimerHandle when=1495.277349056 sleep(0.35) created at /home/isyed/p5-verify/tests/test_health.py:638> took 0.350 seconds
+ok
+test_malformed_and_empty_responses (tests.test_health.HealthTestCase.test_malformed_and_empty_responses) ... ok
+test_no_client_side_fd_growth_while_running (tests.test_health.HealthTestCase.test_no_client_side_fd_growth_while_running) ... ok
+test_no_file_descriptor_growth (tests.test_health.HealthTestCase.test_no_file_descriptor_growth) ... ok
+test_no_probes_after_stop (tests.test_health.HealthTestCase.test_no_probes_after_stop) ... ok
+test_no_resource_warnings_after_many_rounds (tests.test_health.HealthTestCase.test_no_resource_warnings_after_many_rounds) ... ok
+test_non_200_statuses (tests.test_health.HealthTestCase.test_non_200_statuses) ... ok
+test_ok_backend_continues_while_other_backends_hang (tests.test_health.HealthTestCase.test_ok_backend_continues_while_other_backends_hang) ... ok
+test_raising_logger_does_not_kill_checker (tests.test_health.HealthTestCase.test_raising_logger_does_not_kill_checker) ... ok
+test_raising_metrics_does_not_kill_recovery (tests.test_health.HealthTestCase.test_raising_metrics_does_not_kill_recovery) ... ok
+test_raising_stub_pool_does_not_kill_checker (tests.test_health.HealthTestCase.test_raising_stub_pool_does_not_kill_checker) ... ok
+test_recovery_after_exactly_two_successes (tests.test_health.HealthTestCase.test_recovery_after_exactly_two_successes) ... ok
+test_request_format_and_configured_path (tests.test_health.HealthTestCase.test_request_format_and_configured_path) ... ok
+test_round_gaps_are_approximately_one_interval (tests.test_health.HealthTestCase.test_round_gaps_are_approximately_one_interval) ... ok
+test_stop_before_run_and_repeated_stop (tests.test_health.HealthTestCase.test_stop_before_run_and_repeated_stop) ... ok
+test_stop_interrupts_inflight_probe_without_applying_result (tests.test_health.HealthTestCase.test_stop_interrupts_inflight_probe_without_applying_result) ... ok
+test_stop_while_sleeping_is_prompt (tests.test_health.HealthTestCase.test_stop_while_sleeping_is_prompt) ... ok
+test_stopped_backend_has_platform_allowed_reason (tests.test_health.HealthTestCase.test_stopped_backend_has_platform_allowed_reason) ... ok
+test_stopped_backend_recovers_on_same_port (tests.test_health.HealthTestCase.test_stopped_backend_recovers_on_same_port) ... ok
+test_success_status_versions_and_reasonless_status (tests.test_health.HealthTestCase.test_success_status_versions_and_reasonless_status) ... ok
+test_success_then_failure_resets_recovery_counter (tests.test_health.HealthTestCase.test_success_then_failure_resets_recovery_counter) ... ok
+test_unexpected_probe_exception_isolated (tests.test_health.HealthTestCase.test_unexpected_probe_exception_isolated) ... ok
+test_fixed_exception_reasons (tests.test_health.TestReasonFromException.test_fixed_exception_reasons) ... ok
+test_unreachable_errno_reasons (tests.test_health.TestReasonFromException.test_unreachable_errno_reasons) ... ok
+test_all_backends_down_returns_empty_healthy_list (tests.test_pool.TestAccessors.test_all_backends_down_returns_empty_healthy_list) ... ok
+test_all_returns_new_mutable_lists (tests.test_pool.TestAccessors.test_all_returns_new_mutable_lists) ... ok
+test_backend_objects_are_shared_across_accessors (tests.test_pool.TestAccessors.test_backend_objects_are_shared_across_accessors) ... ok
+test_health_removal_preserves_config_order_and_readds_in_place (tests.test_pool.TestAccessors.test_health_removal_preserves_config_order_and_readds_in_place) ... ok
+test_healthy_returns_new_lists_in_config_order (tests.test_pool.TestAccessors.test_healthy_returns_new_lists_in_config_order) ... ok
+test_acquire_and_release_balance_active_counts (tests.test_pool.TestAcquireRelease.test_acquire_and_release_balance_active_counts) ... ok
+test_acquire_and_release_do_not_touch_other_backends (tests.test_pool.TestAcquireRelease.test_acquire_and_release_do_not_touch_other_backends) ... ok
+test_acquire_release_do_not_change_health (tests.test_pool.TestAcquireRelease.test_acquire_release_do_not_change_health) ... ok
+test_down_backend_can_be_acquired_and_released (tests.test_pool.TestAcquireRelease.test_down_backend_can_be_acquired_and_released) ... ok
+test_normal_acquire_release_is_silent (tests.test_pool.TestAcquireRelease.test_normal_acquire_release_is_silent) ... ok
+test_over_release_clamps_and_logs_each_underflow (tests.test_pool.TestAcquireRelease.test_over_release_clamps_and_logs_each_underflow) ... ok
+test_release_does_not_raise_when_logger_raises (tests.test_pool.TestAcquireRelease.test_release_does_not_raise_when_logger_raises) ... ok
+test_second_release_after_active_one_is_underflow (tests.test_pool.TestAcquireRelease.test_second_release_after_active_one_is_underflow) ... ok
+test_all_elements_are_backend_instances (tests.test_pool.TestConstruction.test_all_elements_are_backend_instances) ... ok
+test_builds_backends_in_config_order_with_defaults (tests.test_pool.TestConstruction.test_builds_backends_in_config_order_with_defaults) ... ok
+test_construction_is_silent (tests.test_pool.TestConstruction.test_construction_is_silent) ... ok
+test_pool_does_not_hold_config_entries (tests.test_pool.TestConstruction.test_pool_does_not_hold_config_entries) ... ok
+test_single_and_eight_backend_configs_work (tests.test_pool.TestConstruction.test_single_and_eight_backend_configs_work) ... ok
+test_factory_result_has_all_protocol_methods (tests.test_pool.TestFactory.test_factory_result_has_all_protocol_methods) ... ok
+test_factory_returns_independent_simple_pools (tests.test_pool.TestFactory.test_factory_returns_independent_simple_pools) ... ok
+test_logger_error_propagates_after_state_and_event (tests.test_pool.TestFailureIsolation.test_logger_error_propagates_after_state_and_event) ... ok
+test_metrics_error_propagates_and_later_transition_works (tests.test_pool.TestFailureIsolation.test_metrics_error_propagates_and_later_transition_works) ... ok
+test_down_then_up_preserves_event_and_metric_order (tests.test_pool.TestSetHealth.test_down_then_up_preserves_event_and_metric_order) ... ok
+test_down_transition_updates_state_and_notifies (tests.test_pool.TestSetHealth.test_down_transition_updates_state_and_notifies) ... ok
+test_logging_precedes_metrics_after_state_update (tests.test_pool.TestSetHealth.test_logging_precedes_metrics_after_state_update) ... ok
+test_reasons_are_passed_through_unchanged (tests.test_pool.TestSetHealth.test_reasons_are_passed_through_unchanged) ... ok
+test_repeated_down_transition_logs_once (tests.test_pool.TestSetHealth.test_repeated_down_transition_logs_once) ... ok
+test_same_state_is_silent_no_op (tests.test_pool.TestSetHealth.test_same_state_is_silent_no_op) ... ok
+test_set_health_changes_only_named_backend (tests.test_pool.TestSetHealth.test_set_health_changes_only_named_backend) ... ok
+test_set_health_does_not_change_active (tests.test_pool.TestSetHealth.test_set_health_does_not_change_active) ... ok
+test_unknown_id_raises_key_error_without_side_effects (tests.test_pool.TestSetHealth.test_unknown_id_raises_key_error_without_side_effects) ... ok
+
+----------------------------------------------------------------------
+Ran 130 tests in 11.982s
+
+OK
+MAIN_EXIT=0
+
+One-line summary: 130 tests; 130 passed; 0 failed; 0 errors; 0 skipped; runtime 11.982 s.
+
+Developer-mode run
+==================
+...........................................................................Executing <TimerHandle when=1507.41168777 sleep(0.35) created at /home/isyed/p5-verify/tests/test_health.py:638> took 0.350 seconds
+.......................................................
+----------------------------------------------------------------------
+Ran 130 tests in 12.092s
+
+OK
+DEV_EXIT=0
+
+
+Five repeated tests.test_health runs
+=====================================
+RUN=1 EXIT=0 RUNTIME=12.08
+
+OK
+RUN=2 EXIT=0 RUNTIME=11.908
+
+OK
+RUN=3 EXIT=0 RUNTIME=15.601
+
+OK
+RUN=4 EXIT=0 RUNTIME=12.175
+
+OK
+RUN=5 EXIT=0 RUNTIME=12.111
+
+OK
+
+
+CPU contention stress check
+===========================
+Two busy loops and the test suite were pinned to CPU 0 with taskset.
+Executing <TimerHandle when=1580.704098605 sleep(0.35) created at /home/isyed/p5-verify/tests/test_health.py:638> took 0.350 seconds
+----------------------------------------------------------------------
+Ran 38 tests in 13.818s
+
+OK
+STRESS_EXIT=0
+
+
+Demo_distribution output
+========================
+1. ROUND ROBIN
+first 8 selections: b1 b2 b3 b4 b1 b2 b3 b4
+
+10,000 selections across 4 healthy backends:
+backend  count  percent
+-------  -----  -------
+b1        2500   25.00%
+b2        2500   25.00%
+b3        2500   25.00%
+b4        2500   25.00%
+
+3,000 further selections after b3 removal:
+backend  count  percent
+-------  -----  -------
+b1        1000   33.33%
+b2        1000   33.33%
+b4        1000   33.33%
+
+2. LEAST CONNECTIONS
+active vector       chosen  note
+------------------  ------  -------------------------
+[3, 1, 1, 2]        b2      tie b2/b3; list order
+[0, 0, 5, 9]        b1      tie b1/b2; list order
+[5, 5, 5, 5]        b1      all tied; first wins
+[9, 8, 7, 6]        b4      lowest active count
+
+held-connection simulation:
+round 1: selected b1; active [1, 0, 0, 0]
+round 2: selected b2; active [1, 1, 0, 0]
+round 3: selected b3; active [1, 1, 1, 0]
+round 4: selected b4; active [1, 1, 1, 1]
+round 5: selected b1; active [2, 1, 1, 1]
+round 6: selected b2; active [2, 2, 1, 1]
+round 7: selected b3; active [2, 2, 2, 1]
+round 8: selected b4; active [2, 2, 2, 2]
+after b2 finishes (active 2 -> 1): selected b2
+
+3. IP-HASH
+Client        4 healthy  b3 down  Changed?
+------------  ---------  -------  --------
+10.0.1.11     b3         b1       YES
+10.0.1.12     b2         b1       YES
+10.0.1.13     b2         b2       NO
+10.0.1.14     b2         b2       NO
+table matches brief: YES
+four-client counts: b1=0, b2=3, b3=1, b4=0
+Known behaviour, reported as a finding (hash not tuned)
+
+10,000 random IPv4 addresses (seed 2026), 4 healthy:
+backend  count  percent
+-------  -----  -------
+b1        2473   24.73%
+b2        2524   25.24%
+b3        2548   25.48%
+b4        2455   24.55%
+
+10,000 random IPv4 addresses (seed 2026), b3 down:
+backend  count  percent
+-------  -----  -------
+b1        3370   33.70%
+b2        3222   32.22%
+b4        3408   34.08%
+
+reshuffled mappings: 7517 (75.17%)
+Consistent hashing would avoid this reshuffle; it is not built and is out of scope.
+
+demo complete
