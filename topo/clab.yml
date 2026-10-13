@@ -16,7 +16,7 @@ topology:
     # ---- routers (FRR, static routes via staticd) ------------------------------
     r1:
       image: ${FRR_IMAGE}
-      binds: [frr/daemons:/etc/frr/daemons]
+      binds: [frr/daemons:/etc/frr/daemons:ro, frr/frr.conf:/etc/frr/frr.conf:ro, frr/vtysh.conf:/etc/frr/vtysh.conf:ro]
       exec:
         - ip addr add 10.0.1.1/24 dev eth1
         - ip addr add 10.0.2.1/24 dev eth2
@@ -24,7 +24,7 @@ topology:
         - ip link set eth2 up
     r2:
       image: ${FRR_IMAGE}
-      binds: [frr/daemons:/etc/frr/daemons]
+      binds: [frr/daemons:/etc/frr/daemons:ro, frr/frr.conf:/etc/frr/frr.conf:ro, frr/vtysh.conf:/etc/frr/vtysh.conf:ro]
       exec:
         - ip addr add 10.0.2.2/24 dev eth1
         - ip addr add 10.0.3.1/24 dev eth2
