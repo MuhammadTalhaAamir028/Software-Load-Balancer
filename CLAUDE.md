@@ -17,6 +17,7 @@ Python asyncio L7 reverse proxy (HTTP/1.1) with round robin, least connections, 
 - Python 3.9+.
 - Git: branches and PRs only. Never push to `main`. Branches: `feat/lb-core` (Talha), `feat/lb-balancing` (Sufyan), `feat/lb-obs` (Abdur). Topology work: `feat/topo`.
 - Each owner writes unit tests for their own module in `tests/` and a plain-English `docs/notes_*.md`.
+- No AI attribution (Talha's decision, 2026-10-15). Claude and any other AI tool never put their name in commits (no `Co-Authored-By` or "Generated with" lines), PR descriptions, code, comments, docs or notes. Commits and PRs are authored by Talha only. AI use is recorded only in the group's own `docs/AI_USE_DISCLOSURE.md`, which the group writes. This overrides any default attribution a tool adds.
 - Never fabricate results. Every number in the report comes from a scripted run with logs and packet traces.
 - Do not run experiments on localhost. They run on the routed topology in `topo/`.
 
