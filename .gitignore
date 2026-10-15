@@ -20,3 +20,6 @@ topo/clab-*/
 results/lb_config.json
 results/configs/
 results/.lock
+
+# raw tcpdump output; the .pcapng conversions are committed
+captures/*.pcap

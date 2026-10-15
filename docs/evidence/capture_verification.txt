@@ -1,0 +1,374 @@
+# Capture verification, generated 2026-10-15T10:25:31Z, commit c1e074d
+tshark: TShark (Wireshark) 4.6.4.
+start state LB: 
+haproxy answers: 000
+
+################ 1. client_lb_http
+2980 bytes captures/client_lb_http.pcapng
+SYN (no ACK) count: 1  (README claims 1)
+HTTP requests: 3  responses: 3  (claims 3 and 3)
+FIN count: 2
+packet list:
+    1   0.000000    10.0.1.11 → 10.0.2.10    TCP 74 46240 → 8080 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM TSval=3511927006 TSecr=0 WS=1024
+    2   0.000016    10.0.2.10 → 10.0.1.11    TCP 74 8080 → 46240 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460 SACK_PERM TSval=1442211356 TSecr=3511927006 WS=1024
+    3   0.000033    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=1 Ack=1 Win=57344 Len=0 TSval=3511927006 TSecr=1442211356
+    4   0.000107    10.0.1.11 → 10.0.2.10    HTTP 144 GET / HTTP/1.1 
+    5   0.000110    10.0.2.10 → 10.0.1.11    TCP 66 8080 → 46240 [ACK] Seq=1 Ack=79 Win=57344 Len=0 TSval=1442211356 TSecr=3511927006
+    6   0.011687    10.0.2.10 → 10.0.1.11    TCP 179 HTTP/1.1 200 OK 
+    7   0.011738    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=79 Ack=114 Win=57344 Len=0 TSval=3511927018 TSecr=1442211368
+    8   0.011827    10.0.2.10 → 10.0.1.11    HTTP/JSON 138 HTTP/1.1 200 OK , JSON (application/json)
+    9   0.011868    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=79 Ack=186 Win=57344 Len=0 TSval=3511927018 TSecr=1442211368
+   10   0.012031    10.0.1.11 → 10.0.2.10    HTTP 144 GET / HTTP/1.1 
+   11   0.038550    10.0.2.10 → 10.0.1.11    TCP 179 HTTP/1.1 200 OK 
+   12   0.038670    10.0.2.10 → 10.0.1.11    HTTP/JSON 138 HTTP/1.1 200 OK , JSON (application/json)
+   13   0.038771    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=157 Ack=371 Win=57344 Len=0 TSval=3511927045 TSecr=1442211395
+   14   0.038936    10.0.1.11 → 10.0.2.10    HTTP 144 GET / HTTP/1.1 
+   15   0.079394    10.0.2.10 → 10.0.1.11    TCP 66 8080 → 46240 [ACK] Seq=371 Ack=235 Win=57344 Len=0 TSval=1442211436 TSecr=3511927045
+   16   0.091455    10.0.2.10 → 10.0.1.11    TCP 179 HTTP/1.1 200 OK 
+   17   0.091587    10.0.2.10 → 10.0.1.11    HTTP/JSON 138 HTTP/1.1 200 OK , JSON (application/json)
+   18   0.091625    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=235 Ack=556 Win=57344 Len=0 TSval=3511927098 TSecr=1442211448
+   19   0.091713    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [FIN, ACK] Seq=235 Ack=556 Win=57344 Len=0 TSval=3511927098 TSecr=1442211448
+   20   0.091825    10.0.2.10 → 10.0.1.11    TCP 66 8080 → 46240 [FIN, ACK] Seq=556 Ack=236 Win=57344 Len=0 TSval=1442211448 TSecr=3511927098
+   21   0.091841    10.0.1.11 → 10.0.2.10    TCP 66 46240 → 8080 [ACK] Seq=236 Ack=557 Win=57344 Len=0 TSval=3511927098 TSecr=1442211448
+response Connection header:
+      3 keep-alive
+
+################ 2. lb_backend_forward
+35340 bytes captures/lb_backend_forward.pcapng
+forwarded requests (src|dst|uri|host|X-Forwarded-For|Connection):
+10.0.2.10|10.0.3.11|/|10.0.2.10:8080|10.0.1.11|close
+SYNs from LB to backends excluding probe connections cannot be told apart by flags; probes by uri:
+probes in this capture: 56
+full request packet:
+Hypertext Transfer Protocol
+    GET / HTTP/1.1\r\n
+        Request Method: GET
+        Request URI: /
+        Request Version: HTTP/1.1
+    Host: 10.0.2.10:8080\r\n
+    User-Agent: curl/7.81.0\r\n
+    Accept: */*\r\n
+    X-Forwarded-For: 10.0.1.11\r\n
+    Connection: close\r\n
+    \r\n
+    [Full request URI: http://10.0.2.10:8080/]
+
+
+################ 3. health_probe (b3, success)
+7356 bytes captures/health_probe.pcapng
+probe requests with relative time (s):
+0.000665000|10.0.2.10|10.0.3.13|/health
+0.001041000|10.0.3.13|10.0.2.10|/health
+1.001532000|10.0.2.10|10.0.3.13|/health
+1.002062000|10.0.3.13|10.0.2.10|/health
+2.001889000|10.0.2.10|10.0.3.13|/health
+2.002334000|10.0.3.13|10.0.2.10|/health
+3.001782000|10.0.2.10|10.0.3.13|/health
+3.002282000|10.0.3.13|10.0.2.10|/health
+4.001712000|10.0.2.10|10.0.3.13|/health
+4.002254000|10.0.3.13|10.0.2.10|/health
+5.001255000|10.0.2.10|10.0.3.13|/health
+5.001592000|10.0.3.13|10.0.2.10|/health
+responses: 6 x 200
+SYN count: 6  FIN count: 12
+
+################ 3b. health_probe_timeout (b3 drops everything)
+5864 bytes captures/health_probe_timeout.pcapng
+SYN packets (rel time, src, dst) and replies:
+0.000000000|10.0.2.10|10.0.3.13|··········S·|
+0.000055000|10.0.3.13|10.0.2.10|·······A··S·|
+0.000121000|10.0.2.10|10.0.3.13|·······A····|
+0.001341000|10.0.2.10|10.0.3.13|·······AP···|
+0.001415000|10.0.3.13|10.0.2.10|·······A····|
+0.002071000|10.0.3.13|10.0.2.10|·······AP···|
+0.002088000|10.0.2.10|10.0.3.13|·······A····|
+0.002201000|10.0.3.13|10.0.2.10|·······A···F|
+0.002611000|10.0.2.10|10.0.3.13|·······A···F|
+0.002651000|10.0.3.13|10.0.2.10|·······A····|
+1.000609000|10.0.2.10|10.0.3.13|··········S·|
+1.000658000|10.0.3.13|10.0.2.10|·······A··S·|
+1.000669000|10.0.2.10|10.0.3.13|·······A····|
+1.001848000|10.0.2.10|10.0.3.13|·······AP···|
+1.001921000|10.0.3.13|10.0.2.10|·······A····|
+1.002698000|10.0.3.13|10.0.2.10|·······AP···|
+1.002772000|10.0.2.10|10.0.3.13|·······A····|
+1.002919000|10.0.3.13|10.0.2.10|·······A···F|
+1.003378000|10.0.2.10|10.0.3.13|·······A···F|
+1.003434000|10.0.3.13|10.0.2.10|·······A····|
+1.999585000|10.0.2.10|10.0.3.13|··········S·|
+1.999620000|10.0.3.13|10.0.2.10|·······A··S·|
+1.999625000|10.0.2.10|10.0.3.13|·······A····|
+2.000270000|10.0.2.10|10.0.3.13|·······AP···|
+2.000290000|10.0.3.13|10.0.2.10|·······A····|
+2.000968000|10.0.3.13|10.0.2.10|·······AP···|
+2.000973000|10.0.2.10|10.0.3.13|·······A····|
+2.001044000|10.0.3.13|10.0.2.10|·······A···F|
+2.001081000|10.0.2.10|10.0.3.13|·······A···F|
+2.001102000|10.0.3.13|10.0.2.10|·······A····|
+2.999095000|10.0.2.10|10.0.3.13|··········S·|
+3.999263000|10.0.2.10|10.0.3.13|··········S·|
+4.998700000|10.0.2.10|10.0.3.13|··········S·|
+5.999573000|10.0.2.10|10.0.3.13|··········S·|
+6.998934000|10.0.2.10|10.0.3.13|··········S·|
+7.998810000|10.0.2.10|10.0.3.13|··········S·|
+7.998837000|10.0.3.13|10.0.2.10|·······A··S·|
+7.998842000|10.0.2.10|10.0.3.13|·······A····|
+7.999692000|10.0.2.10|10.0.3.13|·······AP···|
+7.999742000|10.0.3.13|10.0.2.10|·······A····|
+8.000209000|10.0.3.13|10.0.2.10|·······AP···|
+8.000217000|10.0.2.10|10.0.3.13|·······A····|
+8.000270000|10.0.3.13|10.0.2.10|·······A···F|
+8.000566000|10.0.2.10|10.0.3.13|·······A···F|
+8.000582000|10.0.3.13|10.0.2.10|·······A····|
+8.012360000|10.0.3.13|10.0.2.10|·······A··S·|
+8.012371000|10.0.2.10|10.0.3.13|·········R··|
+8.044427000|10.0.3.13|10.0.2.10|·······A··S·|
+8.044443000|10.0.2.10|10.0.3.13|·········R··|
+retransmissions: 0
+LB state after (timeout case, may still be flapping): 
+
+################ 4. failover (own LB)
+kill_ts_ms=1792059990029
+17716 bytes captures/failover.pcapng
+timeline relative to kill (ms): SYN / SYN-ACK / RST / HTTP request to or from 10.0.3.13
+   -5941 ms  10.0.2.10 -> 10.0.3.13  42852 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -5941 ms  10.0.3.13 -> 10.0.2.10  8000 → 42852 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -5940 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+   -5940 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+   -4941 ms  10.0.2.10 -> 10.0.3.13  42862 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -4940 ms  10.0.3.13 -> 10.0.2.10  8000 → 42862 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -4939 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+   -4939 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+   -3942 ms  10.0.2.10 -> 10.0.3.13  42878 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -3942 ms  10.0.3.13 -> 10.0.2.10  8000 → 42878 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -3942 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+   -3941 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+   -3766 ms  10.0.2.10 -> 10.0.3.13  42890 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -3766 ms  10.0.3.13 -> 10.0.2.10  8000 → 42890 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -3766 ms  10.0.2.10 -> 10.0.3.13  GET / HTTP/1.1 
+   -3740 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK , JSON (application/json)
+   -2942 ms  10.0.2.10 -> 10.0.3.13  42904 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -2942 ms  10.0.3.13 -> 10.0.2.10  8000 → 42904 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -2941 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+   -2941 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+   -2840 ms  10.0.2.10 -> 10.0.3.13  42914 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -2840 ms  10.0.3.13 -> 10.0.2.10  8000 → 42914 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -2840 ms  10.0.2.10 -> 10.0.3.13  GET / HTTP/1.1 
+   -2814 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK , JSON (application/json)
+   -1941 ms  10.0.2.10 -> 10.0.3.13  48290 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -1941 ms  10.0.3.13 -> 10.0.2.10  8000 → 48290 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -1941 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+   -1941 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+   -1912 ms  10.0.2.10 -> 10.0.3.13  48292 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -1912 ms  10.0.3.13 -> 10.0.2.10  8000 → 48292 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -1912 ms  10.0.2.10 -> 10.0.3.13  GET / HTTP/1.1 
+   -1886 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK , JSON (application/json)
+    -989 ms  10.0.2.10 -> 10.0.3.13  48296 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    -989 ms  10.0.3.13 -> 10.0.2.10  8000 → 48296 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+    -989 ms  10.0.2.10 -> 10.0.3.13  GET / HTTP/1.1 
+    -963 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK , JSON (application/json)
+    -941 ms  10.0.2.10 -> 10.0.3.13  48298 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    -941 ms  10.0.3.13 -> 10.0.2.10  8000 → 48298 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+    -941 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+    -940 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+     -63 ms  10.0.2.10 -> 10.0.3.13  48312 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+     -63 ms  10.0.3.13 -> 10.0.2.10  8000 → 48312 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+     -63 ms  10.0.2.10 -> 10.0.3.13  GET / HTTP/1.1 
+     -37 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK , JSON (application/json)
+     +58 ms  10.0.2.10 -> 10.0.3.13  48316 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+     +58 ms  10.0.3.13 -> 10.0.2.10  8000 → 48316 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+     +59 ms  10.0.2.10 -> 10.0.3.13  GET /health HTTP/1.1 
+     +59 ms  10.0.3.13 -> 10.0.2.10  HTTP/1.1 200 OK  (text/plain)
+    +871 ms  10.0.2.10 -> 10.0.3.13  48318 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    +871 ms  10.0.3.13 -> 10.0.2.10  8000 → 48318 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +1059 ms  10.0.2.10 -> 10.0.3.13  48328 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +1059 ms  10.0.3.13 -> 10.0.2.10  8000 → 48328 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +1776 ms  10.0.2.10 -> 10.0.3.13  48330 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +1776 ms  10.0.3.13 -> 10.0.2.10  8000 → 48330 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +2058 ms  10.0.2.10 -> 10.0.3.13  48342 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +2058 ms  10.0.3.13 -> 10.0.2.10  8000 → 48342 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +2680 ms  10.0.2.10 -> 10.0.3.13  48352 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +2680 ms  10.0.3.13 -> 10.0.2.10  8000 → 48352 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +3058 ms  10.0.2.10 -> 10.0.3.13  48356 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +3058 ms  10.0.3.13 -> 10.0.2.10  8000 → 48356 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +4058 ms  10.0.2.10 -> 10.0.3.13  48358 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +4058 ms  10.0.3.13 -> 10.0.2.10  8000 → 48358 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +5059 ms  10.0.2.10 -> 10.0.3.13  48368 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +5059 ms  10.0.3.13 -> 10.0.2.10  8000 → 48368 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +6058 ms  10.0.2.10 -> 10.0.3.13  48374 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +6058 ms  10.0.3.13 -> 10.0.2.10  8000 → 48374 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +7058 ms  10.0.2.10 -> 10.0.3.13  48390 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +7058 ms  10.0.3.13 -> 10.0.2.10  8000 → 48390 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +8059 ms  10.0.2.10 -> 10.0.3.13  49396 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +8059 ms  10.0.3.13 -> 10.0.2.10  8000 → 49396 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +9058 ms  10.0.2.10 -> 10.0.3.13  49400 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +9058 ms  10.0.3.13 -> 10.0.2.10  8000 → 49400 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+  +10058 ms  10.0.2.10 -> 10.0.3.13  49416 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+  +10058 ms  10.0.3.13 -> 10.0.2.10  8000 → 49416 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+backend_down in LB log:
+{"ts":"2026-10-15T10:26:33.089Z","event":"backend_down","backend":"b3","reason":"3 consecutive failures: refused"}
+
+# section 5 rerun 2026-10-15T10:28:13Z: HAProxy config rendered, node restarted, b3 restored
+haproxy answers: 200
+LB state: {'b1': True, 'b2': True, 'b3': True, 'b4': True}
+HAProxy backend status:
+  b1 UP
+  b2 UP
+  b3 UP
+  b4 UP
+
+################ 5a. haproxy_client
+2308 bytes captures/haproxy_client.pcapng
+SYN (no ACK) on client leg: 1  requests: 3  responses: 3
+    1   0.000000    10.0.1.11 → 10.0.2.11    TCP 74 55018 → 8080 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM TSval=1351408498 TSecr=0 WS=1024
+    2   0.000016    10.0.2.11 → 10.0.1.11    TCP 74 8080 → 55018 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460 SACK_PERM TSval=1028821748 TSecr=1351408498 WS=1024
+    3   0.000034    10.0.1.11 → 10.0.2.11    TCP 66 55018 → 8080 [ACK] Seq=1 Ack=1 Win=57344 Len=0 TSval=1351408498 TSecr=1028821748
+    4   0.000217    10.0.1.11 → 10.0.2.11    HTTP 144 GET / HTTP/1.1 
+    5   0.026581    10.0.2.11 → 10.0.1.11    HTTP/JSON 227 HTTP/1.1 200 OK , JSON (application/json)
+    6   0.026641    10.0.1.11 → 10.0.2.11    TCP 66 55018 → 8080 [ACK] Seq=79 Ack=162 Win=57344 Len=0 TSval=1351408525 TSecr=1028821775
+    7   0.026930    10.0.1.11 → 10.0.2.11    HTTP 144 GET / HTTP/1.1 
+    8   0.072724    10.0.2.11 → 10.0.1.11    TCP 66 8080 → 55018 [ACK] Seq=162 Ack=157 Win=57344 Len=0 TSval=1028821821 TSecr=1351408525
+    9   0.078199    10.0.2.11 → 10.0.1.11    HTTP/JSON 227 HTTP/1.1 200 OK , JSON (application/json)
+   10   0.078565    10.0.1.11 → 10.0.2.11    HTTP 144 GET / HTTP/1.1 
+   11   0.078574    10.0.2.11 → 10.0.1.11    TCP 66 8080 → 55018 [ACK] Seq=323 Ack=235 Win=57344 Len=0 TSval=1028821827 TSecr=1351408577
+   12   0.085056    10.0.2.11 → 10.0.1.11    HTTP/JSON 226 HTTP/1.1 200 OK , JSON (application/json)
+   13   0.085278    10.0.1.11 → 10.0.2.11    TCP 66 55018 → 8080 [FIN, ACK] Seq=235 Ack=483 Win=57344 Len=0 TSval=1351408583 TSecr=1028821833
+   14   0.085373    10.0.2.11 → 10.0.1.11    TCP 66 8080 → 55018 [FIN, ACK] Seq=483 Ack=236 Win=57344 Len=0 TSval=1028821833 TSecr=1351408583
+   15   0.085398    10.0.1.11 → 10.0.2.11    TCP 66 55018 → 8080 [ACK] Seq=236 Ack=484 Win=57344 Len=0 TSval=1351408583 TSecr=1028821833
+response Connection header:
+      3 
+
+################ 5b. haproxy_failover
+kill_ts_ms=1792060116462
+15636 bytes captures/haproxy_failover.pcapng
+timeline relative to kill (ms): SYN / SYN-ACK / RST / HTTP
+   -6292 ms  10.0.2.11 -> 10.0.3.13  47790 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -6292 ms  10.0.3.13 -> 10.0.2.11  8000 → 47790 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -6292 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -6292 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+   -5290 ms  10.0.2.11 -> 10.0.3.13  47798 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -5289 ms  10.0.3.13 -> 10.0.2.11  8000 → 47798 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -5289 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -5289 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+   -5289 ms  10.0.2.11 -> 10.0.3.13  47798 → 8000 [RST, ACK] Seq=54 Ack=105 Win=57344 Len=0 TSval
+   -4287 ms  10.0.2.11 -> 10.0.3.13  47802 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -4287 ms  10.0.3.13 -> 10.0.2.11  8000 → 47802 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -4287 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -4287 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+   -3757 ms  10.0.2.11 -> 10.0.3.13  47818 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -3757 ms  10.0.3.13 -> 10.0.2.11  8000 → 47818 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -3757 ms  10.0.2.11 -> 10.0.3.13  GET / HTTP/1.1 
+   -3731 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK , JSON (application/json)
+   -3285 ms  10.0.2.11 -> 10.0.3.13  47824 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -3285 ms  10.0.3.13 -> 10.0.2.11  8000 → 47824 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -3285 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -3284 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+   -2833 ms  10.0.2.11 -> 10.0.3.13  47834 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -2833 ms  10.0.3.13 -> 10.0.2.11  8000 → 47834 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -2832 ms  10.0.2.11 -> 10.0.3.13  GET / HTTP/1.1 
+   -2806 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK , JSON (application/json)
+   -2806 ms  10.0.2.11 -> 10.0.3.13  47834 → 8000 [RST, ACK] Seq=126 Ack=182 Win=57344 Len=0 TSva
+   -2283 ms  10.0.2.11 -> 10.0.3.13  47850 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -2283 ms  10.0.3.13 -> 10.0.2.11  8000 → 47850 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -2283 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -2282 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+   -1904 ms  10.0.2.11 -> 10.0.3.13  47858 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -1904 ms  10.0.3.13 -> 10.0.2.11  8000 → 47858 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -1904 ms  10.0.2.11 -> 10.0.3.13  GET / HTTP/1.1 
+   -1878 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK , JSON (application/json)
+   -1281 ms  10.0.2.11 -> 10.0.3.13  47874 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   -1281 ms  10.0.3.13 -> 10.0.2.11  8000 → 47874 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+   -1281 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+   -1281 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+    -974 ms  10.0.2.11 -> 10.0.3.13  47888 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    -974 ms  10.0.3.13 -> 10.0.2.11  8000 → 47888 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+    -974 ms  10.0.2.11 -> 10.0.3.13  GET / HTTP/1.1 
+    -948 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK , JSON (application/json)
+    -947 ms  10.0.2.11 -> 10.0.3.13  47888 → 8000 [RST, ACK] Seq=126 Ack=182 Win=57344 Len=0 TSva
+    -279 ms  10.0.2.11 -> 10.0.3.13  47890 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    -279 ms  10.0.3.13 -> 10.0.2.11  8000 → 47890 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+    -279 ms  10.0.2.11 -> 10.0.3.13  GET /health HTTP/1.1 
+    -278 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK  (text/plain)
+     -46 ms  10.0.2.11 -> 10.0.3.13  47894 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+     -46 ms  10.0.3.13 -> 10.0.2.11  8000 → 47894 [SYN, ACK] Seq=0 Ack=1 Win=56688 Len=0 MSS=9460
+     -46 ms  10.0.2.11 -> 10.0.3.13  GET / HTTP/1.1 
+     -20 ms  10.0.3.13 -> 10.0.2.11  HTTP/1.1 200 OK , JSON (application/json)
+     -20 ms  10.0.2.11 -> 10.0.3.13  47894 → 8000 [RST, ACK] Seq=126 Ack=182 Win=57344 Len=0 TSva
+    +723 ms  10.0.2.11 -> 10.0.3.13  47906 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    +723 ms  10.0.3.13 -> 10.0.2.11  8000 → 47906 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+    +886 ms  10.0.2.11 -> 10.0.3.13  47916 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+    +886 ms  10.0.3.13 -> 10.0.2.11  8000 → 47916 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +1724 ms  10.0.2.11 -> 10.0.3.13  40042 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +1724 ms  10.0.3.13 -> 10.0.2.11  8000 → 40042 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +1795 ms  10.0.2.11 -> 10.0.3.13  40054 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +1795 ms  10.0.3.13 -> 10.0.2.11  8000 → 40054 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +2695 ms  10.0.2.11 -> 10.0.3.13  40068 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +2696 ms  10.0.3.13 -> 10.0.2.11  8000 → 40068 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +2726 ms  10.0.2.11 -> 10.0.3.13  40070 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +2726 ms  10.0.3.13 -> 10.0.2.11  8000 → 40070 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +3727 ms  10.0.2.11 -> 10.0.3.13  40074 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +3727 ms  10.0.3.13 -> 10.0.2.11  8000 → 40074 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +4728 ms  10.0.2.11 -> 10.0.3.13  40080 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +4728 ms  10.0.3.13 -> 10.0.2.11  8000 → 40080 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +5730 ms  10.0.2.11 -> 10.0.3.13  40096 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +5730 ms  10.0.3.13 -> 10.0.2.11  8000 → 40096 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +6732 ms  10.0.2.11 -> 10.0.3.13  40112 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +6732 ms  10.0.3.13 -> 10.0.2.11  8000 → 40112 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +7734 ms  10.0.2.11 -> 10.0.3.13  40124 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +7734 ms  10.0.3.13 -> 10.0.2.11  8000 → 40124 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +8735 ms  10.0.2.11 -> 10.0.3.13  40134 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +8735 ms  10.0.3.13 -> 10.0.2.11  8000 → 40134 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+   +9738 ms  10.0.2.11 -> 10.0.3.13  40146 → 8000 [SYN] Seq=0 Win=56760 Len=0 MSS=9460 SACK_PERM 
+   +9738 ms  10.0.3.13 -> 10.0.2.11  8000 → 40146 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0
+haproxy log lines for b3:
+2026-10-15T10:28:23.499312278Z 10.0.1.11:55018 [15/Oct/2026:10:28:23.472] fe be/b3 0/0/0/26/26 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:32.731421158Z 10.0.1.11:45672 [15/Oct/2026:10:28:32.704] fe be/b3 0/0/0/26/26 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:33.656600108Z 10.0.1.11:45702 [15/Oct/2026:10:28:33.629] fe be/b3 0/0/0/26/26 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:34.584665423Z 10.0.1.11:45754 [15/Oct/2026:10:28:34.558] fe be/b3 0/0/0/26/26 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:35.515475042Z 10.0.1.11:45780 [15/Oct/2026:10:28:35.488] fe be/b3 0/0/0/26/26 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:36.442561575Z 10.0.1.11:45818 [15/Oct/2026:10:28:36.416] fe be/b3 0/0/0/25/25 200 164 - - ---- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:37.348811900Z 10.0.1.11:45836 [15/Oct/2026:10:28:37.348] fe be/b3 0/0/-1/-1/0 503 217 - - SC-- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:38.257952885Z 10.0.1.11:45204 [15/Oct/2026:10:28:38.257] fe be/b3 0/0/-1/-1/0 503 217 - - SC-- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:39.157961060Z 10.0.1.11:45242 [15/Oct/2026:10:28:39.157] fe be/b3 0/0/-1/-1/0 503 217 - - SC-- 1/1/0/0/0 0/0 "GET / HTTP/1.1"
+2026-10-15T10:28:39.188465461Z [WARNING]  (1) : Server be/b3 is DOWN, reason: Layer4 connection problem, info: "Connection refused", check duration: 0ms. 3 active and 0 backup servers left. 0 sessions active, 0 requeued, 0 remaining in queue.
+2026-10-15T10:28:39.188497197Z Server be/b3 is DOWN, reason: Layer4 connection problem, info: "Connection refused", check duration: 0ms. 3 active and 0 backup servers left. 0 sessions active, 0 requeued, 0 remaining in queue.
+end state LB: {'b1': True, 'b2': True, 'b3': True, 'b4': True}
+HAProxy backend status:
+  b1 UP
+  b2 UP
+  b3 UP
+  b4 UP
+total 104
+-rw-r--r-- 1 talha talha  5817 Oct 13 23:14 README.md
+-rw-r--r-- 1 talha talha  2980 Oct 15 15:25 client_lb_http.pcapng
+-rw-r--r-- 1 talha talha 17716 Oct 15 15:26 failover.pcapng
+-rw-r--r-- 1 talha talha  2308 Oct 15 15:28 haproxy_client.pcapng
+-rw-r--r-- 1 talha talha 15636 Oct 15 15:28 haproxy_failover.pcapng
+-rw-r--r-- 1 talha talha  7356 Oct 15 15:26 health_probe.pcapng
+-rw-r--r-- 1 talha talha  5864 Oct 15 15:26 health_probe_timeout.pcapng
+-rw-r--r-- 1 talha talha 35340 Oct 15 15:25 lb_backend_forward.pcapng
+
+################ README display filters, run as written (2026-10-15T10:29:43Z)
+client_lb_http         21     ip.addr == 10.0.1.11 && tcp.port == 8080
+client_lb_http         6      ip.addr == 10.0.1.11 && tcp.port == 8080 && (http.request || http.response)
+client_lb_http         1      tcp.flags.syn == 1 && tcp.flags.ack == 0
+lb_backend_forward     1      ip.src == 10.0.2.10 && ip.dst == 10.0.3.0/24 && http.request && !(http.request.uri == "/health")
+health_probe           12     http.request.uri == "/health" || http.response
+health_probe_timeout   17     tcp.flags.syn == 1 || tcp.flags.reset == 1
+health_probe_timeout   0      tcp.analysis.retransmission
+failover               74     ip.addr == 10.0.3.13 && (tcp.flags.syn == 1 || tcp.flags.fin == 1 || tcp.flags.reset == 1)
+haproxy_client         15     ip.addr == 10.0.1.11 && tcp.port == 8080
+haproxy_client         1      tcp.flags.syn == 1 && tcp.flags.ack == 0 && ip.src == 10.0.1.11
+haproxy_failover       54     ip.addr == 10.0.3.13 && (tcp.flags.syn == 1 || tcp.flags.reset == 1)
+
+file types:
+captures/client_lb_http.pcapng:       pcapng capture file - version 1.0
+captures/failover.pcapng:             pcapng capture file - version 1.0
+captures/haproxy_client.pcapng:       pcapng capture file - version 1.0
+captures/haproxy_failover.pcapng:     pcapng capture file - version 1.0
+captures/health_probe.pcapng:         pcapng capture file - version 1.0
+captures/health_probe_timeout.pcapng: pcapng capture file - version 1.0
+captures/lb_backend_forward.pcapng:   pcapng capture file - version 1.0
+
+ignored by git? (.pcap):
+NOT ignored
