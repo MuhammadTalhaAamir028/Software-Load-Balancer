@@ -1,0 +1,50 @@
+// Architecture of the routed test topology. Addresses and ports come from topo/clab.yml, topo/env.sh and config.example.json.
+// Render: dot -Tpng docs/architecture.dot -o docs/architecture.png ; dot -Tsvg docs/architecture.dot -o docs/architecture.svg
+digraph arch {
+  rankdir=LR;
+  fontname="Helvetica"; fontsize=12; labelloc=t;
+  label="Project 5: routed topology (containerlab + FRR). Solid = data path, dashed = control/measurement. Bridges are Linux bridges (sw-*).";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#ffffff"];
+  edge [fontname="Helvetica", fontsize=9];
+  compound=true; nodesep=0.35; ranksep=0.9;
+
+  subgraph cluster_clients {
+    label="Clients 10.0.1.0/24"; style="filled,rounded"; fillcolor="#eaf3ff"; color="#4a7bd0";
+    c1 [label="c1\n10.0.1.11"]; c2 [label="c2\n10.0.1.12"]; c3 [label="c3\n10.0.1.13"]; c4 [label="c4\n10.0.1.14"];
+    swc [label="sw-clients\n(bridge)", shape=box, style="filled", fillcolor="#dde7f7"];
+    c1 -> swc [dir=none]; c2 -> swc [dir=none]; c3 -> swc [dir=none]; c4 -> swc [dir=none];
+  }
+
+  r1 [label="R1 (FRR)\neth1 10.0.1.1\neth2 10.0.2.1\nroute 10.0.3.0/24 via 10.0.2.2\ntc netem: RTT / loss", fillcolor="#fff2cc"];
+
+  subgraph cluster_lbseg {
+    label="LB segment 10.0.2.0/24 (bridge sw-lb)"; style="filled,rounded"; fillcolor="#eafaf0"; color="#3a9a5c";
+    swl [label="sw-lb\n(bridge)", style="filled", fillcolor="#d5eedd"];
+    lb [label="Own LB (Python asyncio)\n10.0.2.10\nclient port 8080\nstats 9090", fillcolor="#c8f0d4"];
+    hp [label="HAProxy 2.8\n10.0.2.11\nclient port 8080\nstats 8404", fillcolor="#f0e0c8"];
+    lb -> swl [dir=none]; hp -> swl [dir=none];
+  }
+
+  r2 [label="R2 (FRR)\neth1 10.0.2.2\neth2 10.0.3.1\nroute 10.0.1.0/24 via 10.0.2.1", fillcolor="#fff2cc"];
+
+  subgraph cluster_backends {
+    label="Backends 10.0.3.0/24 (default via 10.0.3.1)"; style="filled,rounded"; fillcolor="#fdeeee"; color="#c05050";
+    swb [label="sw-backends\n(bridge)", style="filled", fillcolor="#f5d9d9"];
+    b1 [label="b1  10.0.3.11:8000\ndelay 5 ms, 1.0 CPU"]; b2 [label="b2  10.0.3.12:8000\ndelay 10 ms, 1.0 CPU"];
+    b3 [label="b3  10.0.3.13:8000\ndelay 25 ms, 0.5 CPU\n(killed at t=30 s)", fillcolor="#ffd9d9"]; b4 [label="b4  10.0.3.14:8000\ndelay 50 ms, 0.25 CPU"];
+    swb -> b1 [dir=none]; swb -> b2 [dir=none]; swb -> b3 [dir=none]; swb -> b4 [dir=none];
+  }
+
+  // data path
+  swc -> r1 [label="eth1  10.0.1.0/24", dir=both];
+  r1 -> swl [label="eth2  10.0.2.0/24", dir=both];
+  swl -> r2 [label="eth1", dir=both];
+  r2 -> swb [label="eth2  10.0.3.0/24", dir=both];
+
+  // flows (labels on dashed overlays)
+  c1 -> lb [label="(1) client request\nGET / to 10.0.2.10:8080\nvia R1 (10.0.1.1)", color="#1f5fbf", fontcolor="#1f5fbf", style=bold, constraint=false];
+  lb -> b1 [label="(2) forwarded request\nX-Forwarded-For: 10.0.1.11\nvia R2 (10.0.2.2) to :8000", color="#2a8a4a", fontcolor="#2a8a4a", style=bold, constraint=false];
+  lb -> b3 [label="(3) health probe\nGET /health every 1 s", color="#b8860b", fontcolor="#b8860b", style=dashed, constraint=false];
+  c1 -> hp [label="(1') same request to\n10.0.2.11:8080", color="#8a5a2a", fontcolor="#8a5a2a", style=dashed, constraint=false];
+  c1 -> lb [label="(4) stats\nGET /stats :9090", color="#7a3aa0", fontcolor="#7a3aa0", style=dotted, constraint=false];
+}
