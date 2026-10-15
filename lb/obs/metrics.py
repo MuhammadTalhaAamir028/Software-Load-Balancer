@@ -17,7 +17,8 @@ from __future__ import annotations
 import math
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Mapping, Optional, Sequence, Tuple
+from dataclasses import dataclass
+from typing import Any, Deque, Dict, Mapping, Optional, Sequence, Tuple
 
 from lb.obs.logger import utc_iso_ms
 
@@ -27,10 +28,6 @@ MAX_SAMPLES = 100000
 
 # Bound on stored health transitions.
 MAX_HEALTH_EVENTS = 100
-
-# A sorted copy of the samples is reused for this many seconds, so a dashboard
-# that polls every second does not trigger a new sort on every request.
-PERCENTILE_CACHE_S = 1.0
 
 
 def percentile(sorted_vals: Sequence[float], p: float) -> float:
@@ -46,23 +43,20 @@ def percentile(sorted_vals: Sequence[float], p: float) -> float:
     return sorted_vals[k - 1]
 
 
+@dataclass
 class _BackendCounters:
-    """Counters for one backend. __slots__ keeps each instance small."""
+    """Counters for one backend."""
 
-    __slots__ = ("requests", "errors", "bytes_up", "bytes_down")
-
-    def __init__(self) -> None:
-        self.requests = 0
-        self.errors = 0
-        self.bytes_up = 0
-        self.bytes_down = 0
+    requests: int = 0
+    errors: int = 0
+    bytes_up: int = 0
+    bytes_down: int = 0
 
 
 class MetricsCollector:
     """Collects counters, latency samples and health events."""
 
-    def __init__(self, max_samples: int = MAX_SAMPLES,
-                 percentile_cache_s: float = PERCENTILE_CACHE_S) -> None:
+    def __init__(self, max_samples: int = MAX_SAMPLES) -> None:
         self.total_requests = 0
         self.errors = 0
         self._backends: Dict[str, _BackendCounters] = {}
@@ -72,9 +66,6 @@ class MetricsCollector:
         # monotonic() cannot jump backwards when the system clock changes,
         # which makes it the right clock for measuring uptime.
         self._start = time.monotonic()
-        self._cache_s = percentile_cache_s
-        self._cache_at: Optional[float] = None
-        self._cache_values: Tuple[float, float, float] = (0.0, 0.0, 0.0)
         # Number of calls that were ignored because of invalid arguments.
         # Kept internal on purpose: the snapshot schema has no extra keys.
         self.internal_errors = 0
@@ -133,17 +124,10 @@ class MetricsCollector:
     # ------------------------------------------------------------ reporting
 
     def _percentiles(self) -> Tuple[float, float, float]:
-        """Return (p50, p95, p99), re-sorting at most once per cache interval."""
-        now = time.monotonic()
-        if self._cache_at is not None and (now - self._cache_at) < self._cache_s:
-            return self._cache_values
+        """Return (p50, p95, p99). Sorting happens here, only when a snapshot is taken."""
         # sorted() builds a NEW list, so the live deque is not modified.
         ordered = sorted(self._latencies)
-        self._cache_values = (percentile(ordered, 50),
-                              percentile(ordered, 95),
-                              percentile(ordered, 99))
-        self._cache_at = now
-        return self._cache_values
+        return (percentile(ordered, 50), percentile(ordered, 95), percentile(ordered, 99))
 
     def snapshot(self) -> Mapping[str, Any]:
         """Return a JSON-serialisable view of the current state.
