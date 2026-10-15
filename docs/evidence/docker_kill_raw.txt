@@ -1,0 +1,52 @@
+### start state
+{'b1': True, 'b2': True, 'b3': True, 'b4': True}
+clab-lb-b3 Up 31 seconds
+clab-lb-b3-net Up 2 minutes
+### kill b3
+killed clab-lb-b3 at 1792058524039 (written to /tmp/killrun/kill_ts.txt)
+1792058524039
+kill_ts_ms=1792058524039
+clab-lb-b3 Exited (137) Less than a second ago
+clab-lb-b3-net Up 2 minutes
+### direct probes right after kill
+-- from c1 (curl exit code: 7=refused, 28=timeout, 6=resolve) to b3
+curl rc=7 after 132 ms
+curl rc=7 after 115 ms
+curl rc=7 after 117 ms
+-- from the LB container, python connect to b3:8000
+ConnectionRefusedError errno=111 after 0.1 ms
+ConnectionRefusedError errno=111 after 0.0 ms
+ConnectionRefusedError errno=111 after 0.0 ms
+-- ping b3 from c1 (is the IP still reachable?)
+--- 10.0.3.13 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1014ms
+rtt min/avg/max/mdev = 0.100/0.105/0.111/0.005 ms
+-- ARP/neigh for b3 on r2
+10.0.3.13 dev eth2 lladdr aa:c1:ab:62:4c:43 REACHABLE 
+### LB log for b3 after kill (health_probe + backend_*)
+  -1986 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 200, 'latency_ms': 26.434, 'bytes_up': 125, 'bytes_down': 185}
+  -1048 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 200, 'latency_ms': 26.445, 'bytes_up': 125, 'bytes_down': 185}
+   -104 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 200, 'latency_ms': 26.494, 'bytes_up': 125, 'bytes_down': 185}
+   +809 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 502, 'latency_ms': 0.372, 'bytes_up': 0, 'bytes_down': 114}
+   +809 ms  backend_error  {'client': '10.0.1.11', 'status': 502, 'error': 'backend connect failed: ConnectionRefusedError(111, "Connect call failed (\'10.0.3.13\', 8000)")'}
+  +1724 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 502, 'latency_ms': 0.253, 'bytes_up': 0, 'bytes_down': 114}
+  +1724 ms  backend_error  {'client': '10.0.1.11', 'status': 502, 'error': 'backend connect failed: ConnectionRefusedError(111, "Connect call failed (\'10.0.3.13\', 8000)")'}
+  +2638 ms  request        {'client': '10.0.1.11', 'method': 'GET', 'path': '/', 'status': 502, 'latency_ms': 0.272, 'bytes_up': 0, 'bytes_down': 114}
+  +2638 ms  backend_error  {'client': '10.0.1.11', 'status': 502, 'error': 'backend connect failed: ConnectionRefusedError(111, "Connect call failed (\'10.0.3.13\', 8000)")'}
+  +3049 ms  backend_down   {'reason': '3 consecutive failures: refused'}
+events: 10
+### client loop summary
+requests: 128
+status counts: {'200': 125, '502': 3}
+non-200 (t rel kill ms, code, time_total s, err):
+    +802 502 0.001 
+   +1719 502 0.001 
+   +2632 502 0.001 
+max time_total s: 0.053032
+backend served after kill: {'b4': 33, 'b1': 33, 'b2': 33, '': 3}
+last b3 response at ms rel kill: -135
+### bring b3 back
+clab-lb-b3 is healthy at 1792058548621
+1792058548621
+  +2034 ms  backend_up     ok=None err=None recovered
+{'b1': True, 'b2': True, 'b3': True, 'b4': True}
