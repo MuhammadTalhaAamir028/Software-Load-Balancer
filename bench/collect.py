@@ -17,11 +17,13 @@ import argparse
 import csv
 import glob
 import json
-import math
 import os
 import re
 import sys
 from datetime import datetime, timezone
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lb.obs.metrics import percentile  # noqa: E402  (one nearest-rank rule for dashboard and report)
 
 DURATION_S = 60.0   # hey -z; the kill happens at half of it (a shorter value is for dry runs)
 KILL_TOLERANCE_MS = 500
@@ -30,14 +32,6 @@ CLIENT_CPU_SECONDS = 5  # ... for more than this many consecutive samples
 MIN_NOFILE = 65535
 MAX_DETECTION_S = 10.0
 KILLED = "b3"
-
-
-def percentile(sorted_vals, p):
-    """Nearest-rank percentile of an ascending list (same rule as lb/obs/metrics.py)."""
-    if not sorted_vals:
-        return 0.0
-    k = max(1, math.ceil(p / 100 * len(sorted_vals)))
-    return sorted_vals[k - 1]
 
 
 def read_hey_csv(path):
