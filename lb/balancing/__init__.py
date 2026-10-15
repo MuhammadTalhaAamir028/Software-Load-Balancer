@@ -11,31 +11,31 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping
 
+from .ip_hash import IPHash
+from .least_conn import LeastConnections
+from .round_robin import RoundRobin
+
 if TYPE_CHECKING:
     from lb.interfaces import Balancer, BackendPool, EventLogger, HealthChecker, Metrics
 
 __all__ = ["make_balancer", "make_pool", "make_health_checker"]
 
 
+ALGORITHMS = {
+    "round_robin": RoundRobin,
+    "least_conn": LeastConnections,
+    "ip_hash": IPHash,
+}
+
+
 def make_balancer(name: str) -> Balancer:
     """Create a new balancer for the named algorithm."""
-    valid_names = ("round_robin", "least_conn", "ip_hash")
-    if name == "round_robin":
-        from .round_robin import RoundRobin
-
-        return RoundRobin()
-    if name == "least_conn":
-        from .least_conn import LeastConnections
-
-        return LeastConnections()
-    if name == "ip_hash":
-        from .ip_hash import IPHash
-
-        return IPHash()
-    raise ValueError(
-        f"Unknown balancing algorithm {name!r}. "
-        f"Valid algorithms: {', '.join(valid_names)}"
-    )
+    if name not in ALGORITHMS:
+        raise ValueError(
+            f"Unknown balancing algorithm {name!r}. "
+            f"Valid algorithms: {', '.join(ALGORITHMS)}"
+        )
+    return ALGORITHMS[name]()
 
 
 def make_pool(
