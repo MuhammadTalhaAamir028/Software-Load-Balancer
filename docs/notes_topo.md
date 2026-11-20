@@ -41,6 +41,16 @@ So `b1..b4`, `lb` and `haproxy` are each two containers:
 
 Side effect for the report: a killed backend now answers a connection attempt with a TCP reset ("connection refused"), instead of staying silent. Both our LB and HAProxy see the same behaviour, so the comparison stays fair. Our health checker records it as `refused`; HAProxy usually logs `Layer4 connection problem` or `Layer4 timeout`.
 
+### Measured: what `docker kill` of b3 looks like (2026-10-15)
+Full write-up: `docs/evidence/docker_kill_behaviour.md`, raw output next to it. Short version, own LB, 5 requests per second from c1:
+- **Failure reason: `refused`.** A probe or connect to b3 gets a TCP RST at once (0.0 to 0.1 ms from the LB). The LB logs `backend_down` with `3 consecutive failures: refused`. Not `unreachable`, not `timeout`: the holder container keeps 10.0.3.13 alive and even ping still answers.
+- **Detection window: about 3.0 s** (3.05 s and 3.07 s in two runs). That is `fail_threshold` 3 x `interval_s` 1 s.
+- **No request hangs.** `connect_s` (2 s) was never reached. The slowest request in the 30 s loop took 53 ms; failed requests came back in 0.3 ms.
+- **Client-visible cost:** 3 requests answered `502` before DOWN (one per second, round robin keeps picking b3), none after. HAProxy in the same test answered `503` three times and logged `Server be/b3 is DOWN, reason: Layer4 connection problem, info: "Connection refused"` 2.73 s after the kill.
+- **Re-admission:** `backend_up` (`recovered`) 2.03 s after b3 was back, which is two good probes.
+- A real host failure would give `timeout`, not `refused` (probe waits `timeout_s` 0.5 s, a request waits up to `connect_s` 2 s). A forced timeout is in `captures/health_probe_timeout.pcapng`: netem `loss 100%` on b3-net's egress drops b3's replies, the LB sees an unanswered SYN each second (no TCP retransmission, because 0.5 s is shorter than the 1 s SYN retransmit) and logs `3 consecutive failures: timeout`. The report must say that the failover experiment measures the `refused` case.
+- Loss note: `set_loss.sh 5` drops 5 % in each direction, so a ping loses about 9.8 % (measured 9 % over 100 pings).
+
 ## What netem does
 `tc netem` is a Linux queueing discipline that delays or drops packets on the way out of an interface. `set_rtt.sh <ms>` puts `delay ms/2` on R1 `eth1` (toward the clients) and R1 `eth2` (toward the LB). A request crosses `eth2` once and its reply crosses `eth1` once, so the round trip client to LB gains the full `<ms>`. Setting both interfaces matters because netem only acts on outgoing traffic. `set_loss.sh <pct>` does the same with packet loss and keeps whatever delay is set (the state is remembered in `topo/.netem_state`). `0` removes it. The backend side (R2 to backends) is untouched on purpose: the experiments change the client path only.
 

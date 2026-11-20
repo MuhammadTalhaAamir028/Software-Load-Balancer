@@ -59,9 +59,8 @@ def utc_iso_ms(now: Optional[datetime] = None) -> str:
     """
     if now is None:
         now = _utc_now()
-    # strftime has no millisecond directive, so the milliseconds are appended
-    # manually: microsecond // 1000 truncates (does not round) to milliseconds.
-    return now.strftime("%Y-%m-%dT%H:%M:%S") + ".%03dZ" % (now.microsecond // 1000)
+    # isoformat(timespec="milliseconds") truncates (does not round) to milliseconds.
+    return now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
 def _safe_str(value: Any) -> str:
