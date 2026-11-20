@@ -25,10 +25,7 @@ LB_CPUS=${LB_CPUS:-1.0}                                        # same CPU limit 
 LB_USER=${LB_USER:-$(id -u):$(id -g)}                        # run the LB as you, so logs/ and caches in LB_CODE_DIR are not root-owned
 
 # ---- backend capacity table (values from backends/.env, Abdur) --------------
-B1_DELAY_MS=${B1_DELAY_MS:-5};   B1_CPUS=${B1_CPUS:-1.0}
-B2_DELAY_MS=${B2_DELAY_MS:-10};  B2_CPUS=${B2_CPUS:-1.0}
-B3_DELAY_MS=${B3_DELAY_MS:-25};  B3_CPUS=${B3_CPUS:-0.5}
-B4_DELAY_MS=${B4_DELAY_MS:-50};  B4_CPUS=${B4_CPUS:-0.25}
+. "$REPO_DIR/backends/.env"          # B1..B4_DELAY_MS and B1..B4_CPUS, the only copy of the table
 
 # ---- addressing (PRD section 6) ----------------------------------------------
 NET_CLIENTS=10.0.1.0/24; NET_BACKENDS=10.0.3.0/24
