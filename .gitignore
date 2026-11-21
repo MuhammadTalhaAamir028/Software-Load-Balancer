@@ -23,3 +23,6 @@ results/.lock
 
 # raw tcpdump output; the .pcapng conversions are committed
 captures/*.pcap
+
+# files created by the UI relay
+results/ui/
