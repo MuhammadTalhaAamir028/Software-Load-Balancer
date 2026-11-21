@@ -3,7 +3,28 @@
 A browser page that shows the running project: topology, routing proof, metrics, failover, HAProxy comparison and a guided demo.
 It reads live data from the lab through a small relay. Nothing on the page is sample data: when a source is offline the panel says "No data" and the banner names the source.
 
-## Start (WSL/Linux, from a Linux clone, not /mnt/c)
+## Start on Windows (one command)
+
+From the repository folder, double-click `start.bat` or run:
+
+```powershell
+python start.py
+```
+
+It installs/updates WSL 2 and Ubuntu, Docker, containerlab and tshark, copies the project into Linux, builds the images, deploys the lab,
+starts the UI server in the background and opens <http://127.0.0.1:8765/>. The first run takes 10 to 25 minutes and may ask for
+administrator rights and a restart (WSL); run it again after the restart. Later runs take under a minute.
+
+```powershell
+python start.py --status      # is it running?
+python start.py --logs        # server and deploy log
+python start.py --stop        # stop the server and tear the lab down (--keep-lab keeps the lab)
+python start.py --check       # what is installed, changes nothing
+```
+
+If something fails, `python start.py --logs` shows the Linux-side log. Edits to the project made on Windows are copied again on every `python start.py`.
+
+## Start inside WSL/Linux (from a Linux clone, not /mnt/c)
 
 ```bash
 bash ui/start.sh
