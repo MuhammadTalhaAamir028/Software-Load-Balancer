@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project 5 Load Balancer Analytics</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">LB</div>
+      <div><strong>Software Load Balancer</strong><small>Live analytics presentation</small></div>
+    </div>
+    <div id="relay-status" class="status-pill">Checking relay...</div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Dashboard sections">
+      <a href="#topology">Topology</a>
+      <a href="#routing">Routing</a>
+      <a href="#network">Network</a>
+      <a href="#request">Request</a>
+      <a href="#metrics">Metrics</a>
+      <a href="#health">Health</a>
+      <a href="#reference">HAProxy</a>
+      <a href="#backends">Backends</a>
+      <a href="#experiments">Experiments</a>
+      <a href="#demo">Demo</a>
+    </nav>
+
+    <main>
+      <div id="stale-banner" class="banner" role="status" hidden>
+        <span>Some live sources are offline. No sample values are shown.</span>
+        <strong id="banner-time"></strong>
+      </div>
+
+      <div class="panel-grid">
+        <section class="panel half" id="topology">
+          <header class="panel-header"><h2>U1 Live topology</h2><div class="panel-meta" id="u1-meta"></div></header>
+          <div class="panel-body"><div id="topology-body" class="topology"><div class="empty">No data</div></div></div>
+        </section>
+
+        <section class="panel half" id="routing">
+          <header class="panel-header"><h2>U2 Routing proof</h2><div class="panel-meta" id="u2-meta"></div></header>
+          <div class="panel-body"><pre id="routing-body" class="codebox">No data</pre></div>
+        </section>
+
+        <section class="panel third" id="network">
+          <header class="panel-header"><h2>U3 Network condition</h2><div class="panel-meta" id="u3-meta"></div></header>
+          <div class="panel-body"><div id="netem-body">No data</div></div>
+        </section>
+
+        <section class="panel wide" id="request">
+          <header class="panel-header"><h2>U4-U5 Request and packet view</h2><div class="panel-meta" id="u4-meta"></div></header>
+          <div class="panel-body">
+            <div class="controls">
+              <button id="capture-button" class="primary">Capture 5 seconds</button>
+              <a id="pcap-link" hidden>Download .pcap</a>
+            </div>
+            <pre id="request-body" class="codebox">No data</pre>
+            <div id="capture-result"></div>
+            <pre id="packet-body" class="codebox">Capture packets will appear here.</pre>
+          </div>
+        </section>
+
+        <section class="panel wide" id="metrics">
+          <header class="panel-header"><h2>U6-U7 Own-LB metrics</h2><div class="panel-meta" id="u6-meta"></div></header>
+          <div class="panel-body">
+            <div id="metrics-kpis" class="kpis"></div>
+            <table>
+              <thead><tr><th>Backend</th><th>Requests</th><th>Share</th><th>Active</th><th>Health</th><th>Errors</th></tr></thead>
+              <tbody id="backend-table"><tr><td colspan="6" class="empty">No data</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel half" id="health">
+          <header class="panel-header"><h2>U8 Health and failover</h2><div class="panel-meta" id="u8-meta"></div></header>
+          <div class="panel-body"><div id="health-body" class="timeline"><div class="empty">No data</div></div></div>
+        </section>
+
+        <section class="panel half" id="reference">
+          <header class="panel-header"><h2>U9 HAProxy side-by-side</h2><div class="panel-meta" id="u9-meta"></div></header>
+          <div class="panel-body"><div id="haproxy-body"><div class="empty">No data</div></div></div>
+        </section>
+
+        <section class="panel half" id="backends">
+          <header class="panel-header"><h2>U10 Backend capacity</h2><div class="panel-meta" id="u10-meta"></div></header>
+          <div class="panel-body"><div id="capacity-body"><div class="empty">No data</div></div></div>
+        </section>
+
+        <section class="panel half" id="experiments">
+          <header class="panel-header"><h2>U11-U12 Experiments and integrity</h2><div class="panel-meta" id="u11-meta"></div></header>
+          <div class="panel-body">
+            <div id="experiment-banner" class="banner">Checking result files...</div>
+            <div id="experiment-body"><div class="empty">No data</div></div>
+            <h3>U12 Environment and integrity</h3>
+            <div id="environment-body"><div class="empty">No data</div></div>
+          </div>
+        </section>
+
+        <section class="panel wide" id="demo">
+          <header class="panel-header"><h2>U13-U14 Guided demo and freshness</h2><div class="panel-meta" id="u13-meta"></div></header>
+          <div class="panel-body">
+            <div class="controls">
+              <button class="primary" data-control="start-load">Start fixed load</button>
+              <button data-control="stop-load">Stop load</button>
+              <button class="danger" data-control="kill-b3">Kill b3</button>
+              <button data-control="start-b3">Restore b3</button>
+              <button data-control="rtt" data-rtt="0">RTT 0 ms</button>
+              <button data-control="rtt" data-rtt="20">RTT 20 ms</button>
+              <button data-control="rtt" data-rtt="100">RTT 100 ms</button>
+              <button data-control="rtt" data-rtt="200">RTT 200 ms</button>
+              <button data-control="algorithm" data-algorithm="round_robin">Own: round robin</button>
+              <button data-control="algorithm" data-algorithm="least_conn">Own: least conn</button>
+              <button data-control="algorithm" data-algorithm="ip_hash">Own: IP hash</button>
+              <button data-control="haproxy-algorithm" data-algorithm="round_robin">HAProxy: round robin</button>
+              <button data-control="haproxy-algorithm" data-algorithm="least_conn">HAProxy: least conn</button>
+              <button data-control="haproxy-algorithm" data-algorithm="ip_hash">HAProxy: IP hash</button>
+              <button data-control="active-system" data-system="own">Activate own LB</button>
+              <button data-control="active-system" data-system="haproxy">Activate HAProxy</button>
+            </div>
+            <ol>
+              <li>Start fixed load and watch U6-U7 counters update.</li>
+              <li>Kill b3 and watch U8 health events and detection time.</li>
+              <li>Restore b3 and observe the backend return to UP.</li>
+              <li>Change RTT using only the fixed values above.</li>
+            </ol>
+            <div id="control-result" class="annotation">Controls report their result here.</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -8,6 +8,10 @@ Start here: `docs/PRD.md`, then `docs/RESPONSIBILITIES.md`, then your brief in `
 
 Reproduction steps (setup, run, experiments) are filled in during Phase 4.
 
+## Complete startup guide
+
+Use [START_PROJECT.md](START_PROJECT.md) for the complete commands to build the topology, start both load balancers and the live UI, run experiments, capture packets, switch algorithms, and cleanly stop the project.
+
 ## HAProxy reference configuration
 
 With Docker running, render and validate one HAProxy config from the repository

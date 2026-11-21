@@ -1,0 +1,16 @@
+{
+  "U1": "Subnets, the 10.0.2.0/24 bridge, request, forward, probe, and stats flows.",
+  "U2": "10.0.1.1 is R1, 10.0.2.2 is R2, and 10.0.3.11 is b1.",
+  "U3": "Configured RTT and loss are shown separately from measured ping RTT and loss.",
+  "U4": "The walkthrough identifies X-Backend-Id, X-Forwarded-For, LB-to-backend connection close, and client keep-alive.",
+  "U5": "The capture labels handshake, one SYN for multiple requests, probes every 1 s, and RST on refusal.",
+  "U6": "Requests/s are calculated from live /stats counter deltas.",
+  "U7": "Round robin is even, least-conn favours fast backends, and IP-hash sticks a client to a backend.",
+  "U8": "Detection is based on the first backend_down event after the recorded kill.",
+  "U9": "HAProxy CSV exposes aggregate counters and status only; p50/p95/p99 are not invented.",
+  "U10": "Unequal capacity by design.",
+  "U11": "Dry run, not report data. Full experiment runs are not available.",
+  "U12": "Invalid or partial environment data is flagged rather than corrected with invented values.",
+  "U13": "Fixed demo actions only: start load, kill b3, watch detection, restore b3, and change RTT.",
+  "U14": "Every panel reports its source and last successful update."
+}
