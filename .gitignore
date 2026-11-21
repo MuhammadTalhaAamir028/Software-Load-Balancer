@@ -26,3 +26,6 @@ captures/*.pcap
 
 # files created by the UI relay
 results/ui/
+
+# written by start.py on the Windows side
+.start_state.json
