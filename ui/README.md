@@ -24,6 +24,10 @@ python start.py --check       # what is installed, changes nothing
 
 If something fails, `python start.py --logs` shows the Linux-side log. Edits to the project made on Windows are copied again on every `python start.py`.
 
+## Quick start (project already installed)
+
+Double-click `quick_start.bat`. It installs nothing: it starts the lab and the UI inside WSL and opens the page (about a minute). Keep its window open; closing it stops the UI. Use `start.bat` only the first time on a machine.
+
 ## Start inside WSL/Linux (from a Linux clone, not /mnt/c)
 
 ```bash
