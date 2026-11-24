@@ -181,7 +181,7 @@ The descriptor tests pass with the real checker; a deliberately broken no-close 
 | Silent death recovery | 1.5 s | 1.021 / 1.490 / 1.878 s |
 
 These values were measured on Ubuntu 24.04 under WSL2 with Python 3.12.3, using loopback fake backends in one process. They are not routed-topology results. A real `docker kill` can produce `unreachable` or `timeout`, so the final report must use topology measurements.
-The full suite recorded 130 tests passed and zero failures. Evidence is in `docs/test_results_balancing.txt` and `docs/smoke_checks_balancing.txt`. The reproducible scripts are `tests/demo_distribution.py` and `tests/smoke_health.py`.
+The full suite recorded 130 tests passed and zero failures. Evidence is in `docs/test_results_balancing.txt` and `docs/smoke_checks_balancing.txt`. The reproducible scripts are `bench/demo_distribution.py` and `bench/smoke_health.py`.
 
 ## Findings worth quoting in the report
 

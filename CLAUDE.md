@@ -4,8 +4,6 @@ Python asyncio L7 reverse proxy (HTTP/1.1) with round robin, least connections, 
 
 ## Read first
 1. `docs/PRD.md`: scope, locked decisions (D1-D14), addressing, ports, interface contract, experiment plan.
-2. `docs/RESPONSIBILITIES.md`: who owns which files.
-3. `docs/briefs/` : the owner's brief, if present.
 
 ## Hard rules
 - Scope = official Project 5 only. No extra features. Allowed optional extras only: dynamic weights, consistent hashing, connection draining, TLS termination, L4-vs-L7 comparison. No connection pooling, caching, auth, filtering, rate limiting.

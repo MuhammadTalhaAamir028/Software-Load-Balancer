@@ -68,5 +68,4 @@ Read this first if you know nothing about the project. No numbers here, only wha
 ## Where to read more
 - Exact addresses and ports: `architecture.png`.
 - Rules, decisions and numbers: `PRD.md`.
-- Who owns which file: `RESPONSIBILITIES.md`.
 - What was measured and captured so far: `evidence/`.

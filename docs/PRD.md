@@ -190,7 +190,7 @@ lb/
   core/                  Talha: server.py, http_io.py, forward.py
   balancing/             Sufyan: round_robin.py, least_conn.py, ip_hash.py, pool.py, health.py
   obs/                   Abdur: logger.py, metrics.py, stats_server.py, dashboard/
-backends/                Abdur: app.py, Dockerfile, docker-compose.yml
+backends/                Abdur: app.py, Dockerfile
 topo/                    Talha: containerlab/netns scripts, routes, netem scripts
 haproxy/                 Abdur: haproxy.cfg equivalent settings
 bench/                   Abdur: run_experiment.sh, collect.py, analyze.py, plots

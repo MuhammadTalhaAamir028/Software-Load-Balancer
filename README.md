@@ -4,7 +4,7 @@ Python asyncio L7 reverse proxy with round robin, least connections and IP-hash,
 
 Team: Talha, Sufyan, Abdur Rehman.
 
-Start here: `docs/PRD.md`, then `docs/RESPONSIBILITIES.md`, then your brief in `docs/briefs/`.
+Start here: `docs/PRD.md` (scope and decisions), then the reproduction steps below.
 
 ## What this project is
 
@@ -103,7 +103,7 @@ python -m unittest discover -s tests -t .          # 222 tests, about 50 seconds
 - WSL2 shuts down when nothing runs in it and the lab loses its links; `quick_start.bat` keeps WSL alive, otherwise keep a terminal open and rebuild with `bash topo/build.sh` if the traceroute breaks.
 - Shell and config files must have Linux (LF) line endings; the repository enforces this in `.gitattributes`.
 - Two WSL distros share one network, so only one of them may run Docker at a time.
-- Full step-by-step commands and a troubleshooting table: [START_PROJECT.md](START_PROJECT.md). Design decisions and the experiment plan: `docs/PRD.md`. Who wrote what: `docs/RESPONSIBILITIES.md`.
+- Full step-by-step commands and a troubleshooting table: [START_PROJECT.md](START_PROJECT.md). Design decisions and the experiment plan: `docs/PRD.md`.
 
 ## HAProxy reference configuration
 
