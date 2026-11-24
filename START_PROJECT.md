@@ -2,7 +2,23 @@
 
 This guide starts the routed topology, own load balancer, HAProxy, dashboard relay, and live UI.
 
-All commands must run in WSL2 Ubuntu or a Linux VM. Use a Linux filesystem clone such as `~/slb`, not `/mnt/c/...`.
+## 0. Pick how you want to start
+
+| Situation | Do this | Time |
+|---|---|---|
+| First time on this PC (nothing installed) | Double-click `start.bat` (or `python start.py`). It installs WSL, Docker, containerlab and tshark, copies the project into Linux, builds the images, deploys the lab and opens the UI. It may ask for administrator rights and a restart; run it again after the restart. | 10 to 25 min |
+| Project already installed (the normal case) | Double-click `quick_start.bat`. It installs nothing: it starts the lab and the UI in WSL and opens <http://127.0.0.1:8765/>. Keep its window open; closing it stops the UI. | about 1 min |
+| You want to see or control every step | Follow sections 1 to 14 below, by hand, inside WSL. | 10 min |
+
+To stop: close the `quick_start.bat` window (stops the UI), then `bash topo/teardown.sh` inside WSL to remove the lab. `python start.py --stop` does both from Windows (`--keep-lab` keeps the lab).
+
+### What you need to know before you start
+- The routed topology needs a real Linux kernel (network namespaces, bridges, `tc netem`). On Windows that means WSL2. Windows alone cannot run it, but it is fine for editing code, running the `lb/core` unit tests and viewing captures in Wireshark.
+- All commands below run in WSL2 Ubuntu (22.04 or 24.04 recommended; the project was built on 26.04) or a Linux VM. Use a Linux filesystem clone such as `~/slb`, not `/mnt/c/...`.
+- Nothing runs on `localhost`: the experiments use the routed lab, so packets really cross two routers. A Windows browser cannot reach the container addresses (10.0.x.x), which is why the UI uses a small relay that listens on `127.0.0.1:8765` only.
+- WSL shuts down when nothing is running in it, and the lab loses its links when that happens. `quick_start.bat` keeps WSL alive while its window is open. If you start the lab by hand, keep a terminal open (for example `wsl -e sleep infinity`).
+- Shell scripts need Unix line endings (LF). If you copy the project from Windows and a script fails with `$'\r': command not found`, run `sed -i 's/\r$//' <file>` or copy again with `start.py`, which converts them.
+- Raise the open-file limit (`ulimit -n 65535`) before the 500-connection runs.
 
 ## 1. Prerequisites
 
@@ -453,3 +469,20 @@ curl -s http://127.0.0.1:8765/api/status
 ```
 
 The UI is ready when the topology is visible, `/stats` returns live JSON, HAProxy returns CSV or log data, and `/api/status` reports success.
+
+## 15. Troubleshooting (problems we actually hit)
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `traceroute` from c1 shows `10.0.1.1` then only `*` | The static routes on R1 and R2 did not load, or the lab lost its links after WSL went idle | Rebuild: `LB_CONFIG=$PWD/results/ui/lb_config.json bash topo/build.sh` (or `bash topo/build.sh` for the default config), then `bash topo/verify.sh` |
+| c1 has no `10.0.x.x` route, ping to the LB gets 100 % loss | The lab restarted without its links (WSL shutdown) | Same rebuild as above, and keep a WSL terminal open |
+| `$'\r': command not found` or `frr.conf processing failure` | Files copied from Windows have CRLF line endings | `find topo haproxy backends -type f -exec sed -i 's/\r$//' {} +`, then rebuild |
+| HAProxy does not answer on 10.0.2.11:8080 | It idles until `haproxy/haproxy.cfg` exists | `bash haproxy/render.sh round_robin && docker restart -t 1 clab-lb-haproxy` |
+| `kill_backend.sh` says `container 'b3' does not exist` | The container prefix is missing | Run it with `BACKEND_PREFIX=clab-lb-` as in section 10 |
+| `sudo: interactive authentication is required` | The lab scripts need root for `docker`, `containerlab`, `tc` | Run them with sudo, or allow those commands without a password in `/etc/sudoers.d/` (remove the file when you are done) |
+| Browser shows "can't reach this page" on 127.0.0.1:8765 | The relay is not running (it stops when its WSL window closes) | Run `quick_start.bat` again, or `python3 ui/relay.py` inside `~/slb` |
+| The UI dashboard shows "No data" for a panel | That source is offline (the page never shows made-up values) | Read the banner: it names the source. Usually the lab is not running |
+| Health list shows old `timeout` entries | The servers were still starting when the load balancer began probing | Harmless. They are from start-up, not from the failover |
+| `python start.py` stops with `could not make way for new regular file: .git` | The Windows folder is a git worktree, so `.git` is a file, not a folder, and the copy step cannot replace the Linux clone's `.git` | Run `start.py` from a normal clone, not a worktree. Note that the copy step overwrites the Linux copy, including `results/`: back up `~/slb/results` first |
+
+Before any experiment that counts for the report, confirm the lab is healthy with `bash topo/verify.sh` (routing tables, a traceroute through both routers and a 200 from the load balancer).

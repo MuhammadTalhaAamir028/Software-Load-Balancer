@@ -6,7 +6,18 @@ Team: Talha, Sufyan, Abdur Rehman.
 
 Start here: `docs/PRD.md`, then `docs/RESPONSIBILITIES.md`, then your brief in `docs/briefs/`.
 
-Reproduction steps (setup, run, experiments) are filled in during Phase 4.
+## Reproduce the project (short version)
+
+Requirements: Windows 10/11 with WSL2 (Ubuntu 22.04 or 24.04 recommended; built on 26.04), or a native Ubuntu machine or VM. No cloud account or API key is needed. The routed topology needs a real Linux kernel, so on Windows it runs inside WSL2.
+
+1. **Install and start.** On Windows, double-click `start.bat` the first time (it installs WSL, Docker, containerlab and tshark, builds the images and deploys the lab). On Linux, install Docker, containerlab and tshark yourself, then follow [START_PROJECT.md](START_PROJECT.md) sections 1 to 3. Later starts: `quick_start.bat`.
+2. **Prove the routed topology.** `bash topo/verify.sh` prints the routing tables of R1 and R2, a traceroute from c1 to b1 (10.0.1.1, 10.0.2.2, 10.0.3.11) and a response from the load balancer. The result we got is in `docs/evidence/checkpoint1.txt`.
+3. **Run the proof of concept.** Open the live UI at <http://127.0.0.1:8765/>. It shows the topology, one live request, a live packet capture, the metrics, the failover and the HAProxy comparison. Section 10 of START_PROJECT.md kills backend b3 under load.
+4. **Repeat the experiments.** Inside WSL: `ulimit -n 65535`, then `bash bench/run_all.sh --list` (the plan: 54 + 18 runs), then `SEED=1 bash bench/run_all.sh`, then `python3 bench/analyze.py`. Each run is 60 s after a 5 s warm-up, with b3 killed at t = 30 s. Results land in `results/`. `results/checkpoint2/` is a single dry run, not report data.
+5. **Check the evidence.** Packet captures are in `captures/` (the filter and the expected pattern for each are in `captures/README.md`), and the annotated screenshots are in `docs/img/`.
+6. **Run the unit tests.** `python -m unittest discover -s tests -t .` (works on Windows or Linux; 218 tests).
+
+Tool versions and hardware used for each run are recorded in `results/*/environment.txt` by `bench/environment.sh`.
 
 ## Complete startup guide
 
