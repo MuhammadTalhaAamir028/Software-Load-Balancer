@@ -90,6 +90,7 @@ docker stop -t 1 "$(node "$OTHER_NODE")" >/dev/null 2>&1 || true
 if [ "$SYSTEM" = own ]; then
   python3 "$BENCH_DIR/make_configs.py" --out-dir "$RESULTS_DIR/configs" >/dev/null
   cat "$RESULTS_DIR/configs/config.$ALGO.json" > "$BENCH_LB_CONFIG"          # in place: the bind mount follows the inode
+  docker start "$(node lb)" >/dev/null 2>&1 || true     # the previous run may have been HAProxy, which stops the own LB
   docker exec "$(node lb)" cat /etc/lb/config.json | cmp -s - "$BENCH_LB_CONFIG" \
     || die "the LB container does not see $BENCH_LB_CONFIG; deploy with LB_CONFIG=$BENCH_LB_CONFIG"
   mkdir -p "$(dirname "$LB_LOG")"; : >> "$LB_LOG"
