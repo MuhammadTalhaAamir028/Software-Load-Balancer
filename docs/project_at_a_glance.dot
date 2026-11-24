@@ -1,0 +1,97 @@
+// Project at a glance: what every part is and what it does, in plain words. No numbers, no stats.
+// Render: dot -Tpng -Gdpi=110 docs/project_at_a_glance.dot -o docs/project_at_a_glance.png
+//         dot -Tsvg docs/project_at_a_glance.dot -o docs/project_at_a_glance.svg
+digraph glance {
+  rankdir=TB; compound=true; newrank=true;
+  nodesep=0.6; ranksep=0.7; pad=0.3;
+  fontname="Helvetica"; fontsize=20; labelloc=t; labeljust=l;
+  label=<<B>Project 5 at a glance: many users, one front door, four servers</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Users send web requests to ONE address. Our program (the load balancer) answers that address and hands each request to one of four servers, and keeps checking which servers are still alive. We compare it with HAProxy, a well-known tool, on a small fake network we built out of containers.</FONT><BR ALIGN="LEFT"/> >;
+  node [fontname="Helvetica", fontsize=13, shape=plaintext];
+  edge [fontname="Helvetica", fontsize=13, penwidth=2];
+
+  // ---------------- 1. users ----------------
+  clients [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#eaf3ff" COLOR="#4a7bd0">
+      <TR><TD ALIGN="LEFT"><B>1. Clients c1 to c4: the users</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Four pretend users. They send web requests,<BR ALIGN="LEFT"/>and they also run the tool that sends lots of requests for the tests.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------------- 2. the network in the middle ----------------
+  r1 [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff2cc" COLOR="#c9a227">
+      <TR><TD ALIGN="LEFT"><B>2a. Router R1</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Passes traffic from the users' network<BR ALIGN="LEFT"/>to the middle network. It is also where we add<BR ALIGN="LEFT"/>fake delay and packet loss to test bad networks.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+  bridge [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff8e1" COLOR="#c9a227">
+      <TR><TD ALIGN="LEFT"><B>2b. Middle network (a switch)</B></TD></TR>
+      <TR><TD ALIGN="LEFT">One shared cable that joins R1, R2,<BR ALIGN="LEFT"/>our load balancer and HAProxy.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+  r2 [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fff2cc" COLOR="#c9a227">
+      <TR><TD ALIGN="LEFT"><B>2c. Router R2</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Passes traffic from the middle network<BR ALIGN="LEFT"/>to the servers' network, and back.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------------- 3. the two load balancers ----------------
+  ownlb [label=<
+    <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#e6f7ec" COLOR="#2a8a4a">
+      <TR><TD ALIGN="LEFT"><B>3. OUR load balancer (the thing we built, in Python)</B></TD></TR>
+      <TR><TD ALIGN="LEFT">The front door. It receives every request and decides<BR ALIGN="LEFT"/>which server should handle it. Its parts:<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Listener</B>: accepts a user's connection, reads the request,<BR ALIGN="LEFT"/>passes it on and returns the server's answer.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Balancer</B>: picks the next server. Three rules to choose from:<BR ALIGN="LEFT"/>take turns, pick the least busy, or always give the same<BR ALIGN="LEFT"/>user the same server.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Pool</B>: the list of servers, who is alive, and how busy each is.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Health checker</B>: every second asks each server "are you alive?".<BR ALIGN="LEFT"/>Misses 3 in a row: stop sending traffic to it. Passes 2: take it back.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Settings file</B>: one file with the ports, servers and timeouts.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+  haproxy [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#f4ece0" COLOR="#8a5a2a">
+      <TR><TD ALIGN="LEFT"><B>3'. HAProxy: the yardstick</B></TD></TR>
+      <TR><TD ALIGN="LEFT">A famous ready-made load balancer. Same job, same<BR ALIGN="LEFT"/>settings, different address. We run the same tests on<BR ALIGN="LEFT"/>it so we can compare it with ours.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+  watch [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#f3eafa" COLOR="#7a3aa0">
+      <TR><TD ALIGN="LEFT"><B>4. Watching (inside our load balancer)</B></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Logger</B>: a diary of events: request served,<BR ALIGN="LEFT"/>server went down, server came back.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Metrics</B>: counts requests, errors and how long they took.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Stats page</B>: a web page that shows the live numbers.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------------- 5. the servers ----------------
+  servers [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" BGCOLOR="#fdeeee" COLOR="#c05050">
+      <TR><TD ALIGN="LEFT"><B>5. Servers b1 to b4: the real workers</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Four tiny web servers. Each replies with its own<BR ALIGN="LEFT"/>name after a built-in pause. They are different speeds<BR ALIGN="LEFT"/>on purpose (b1 fastest, b4 slowest).<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>b3 is the one we switch off during the test</B><BR ALIGN="LEFT"/>to see how fast the load balancer notices.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------------- 6. tools that build and test ----------------
+  tools [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#eeeeee" COLOR="#666666">
+      <TR><TD ALIGN="LEFT"><B>6. Tools that build, test and prove (outside the load balancer)</B></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Lab builder</B>: creates this whole fake network from a<BR ALIGN="LEFT"/>text file, using containers (small isolated computers).<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Load tester</B>: the four users send lots of requests for<BR ALIGN="LEFT"/>60 seconds; at 30 seconds it switches b3 off; results are saved.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Collector and charts</B>: turn the saved results into tables and graphs.<BR ALIGN="LEFT"/></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>Packet recorder</B>: records the real network messages (packets)<BR ALIGN="LEFT"/>as proof of what happened.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------------- arrows ----------------
+  // The main road is two-way: the request goes down, the answer comes back up the same road.
+  clients -> r1 [dir=both, color="#1f5fbf", fontcolor="#1f5fbf", label=<  <B>A</B>  request goes down: "give me the page".<BR/>  <B>C</B>  the answer comes back up the same road.>];
+  r1 -> bridge [dir=both, color="#1f5fbf"];
+  bridge -> ownlb [dir=both, color="#1f5fbf"];
+  bridge -> haproxy [dir=both, color="#8a5a2a", style=dashed, fontcolor="#8a5a2a", label=<  same test,<BR/>  other system>];
+  ownlb -> r2 [dir=both, color="#2a8a4a", fontcolor="#2a8a4a", label=<  <B>B</B>  passes it to ONE chosen server>];
+  haproxy -> r2 [dir=both, color="#8a5a2a", style=dashed];
+  r2 -> servers [dir=both, color="#2a8a4a"];
+  ownlb -> watch [color="#7a3aa0", fontcolor="#7a3aa0", style=dotted, label=<  <B>E</B>  events and counts>];
+  tools -> clients [color="#666666", fontcolor="#666666", style=dashed, constraint=false, label=<  <B>F</B>  start the test>];
+  tools -> servers [color="#c03030", fontcolor="#c03030", style=dashed, constraint=false, label=<  <B>G</B>  switch b3 off>];
+  ownlb -> servers [color="#b8860b", fontcolor="#b8860b", style=dashed, constraint=false, label=<  <B>D</B>  "are you alive?" once a second>];
+
+  // ---------------- layout hints ----------------
+  {rank=same; ownlb; haproxy; watch;}
+  {rank=same; r1; tools;}
+  ownlb -> haproxy [style=invis];
+  haproxy -> watch [style=invis];
+}
