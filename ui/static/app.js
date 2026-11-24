@@ -344,8 +344,10 @@ poll("stats", 1000, async () => {
   try {
     envelope = await load("/api/stats");
   } catch (error) {
-    put("metrics-kpis", empty("No data", error.message));
-    put("backend-table", h("tr", null, h("td", {colspan: 6, class: "empty"}, "No data")));
+    const stopped = appState && !appState.lb_running;
+    const reason = stopped ? "The own load balancer is stopped (HAProxy is the active system). Its live numbers are in U9 below; choose Own LB or Both in U13 to see this panel." : error.message;
+    put("metrics-kpis", empty(stopped ? "Own LB stopped" : "No data", reason));
+    put("backend-table", h("tr", null, h("td", {colspan: 6, class: "empty"}, stopped ? "Own LB stopped" : "No data")));
     put("chart-rps"); put("chart-p95");
     delete latest.stats;
     drawMap();
@@ -410,8 +412,30 @@ poll("haproxy", 3000, async () => {
   latest.haproxy = data;
   const own = latest.stats ? latest.stats.data : null;
   const total = data.servers.reduce((sum, row) => sum + Number(row.stot || 0), 0);
+  const sum = data.summary || {total: 0, scur: 0, rtime_ms: 0, errors: 0};
+  const ownRps = latest.stats ? latest.stats.rps : null;
+  // Side by side: only when both systems answer (use "Both (demo)" in U13). HAProxy has no percentiles, so it shows the average response time instead.
+  const compare = own ? h("div", null,
+    h("h3", null, "Side by side: own LB vs HAProxy (live)"),
+    h("table", null,
+      h("thead", null, h("tr", null, h("th", null, "Measure"), h("th", {class: "num"}, "Own LB"), h("th", {class: "num"}, "HAProxy"))),
+      h("tbody", null,
+        [["Requests per second", ownRps === null ? "—" : nf.format(ownRps), data.rps === null ? "—" : nf.format(data.rps)],
+         ["Total requests", nf.format(own.total_requests || 0), nf.format(sum.total)],
+         ["Errors", nf.format(own.errors || 0), nf.format(sum.errors)],
+         ["Latency p50 / p95 / p99", `${num(own.latency_ms.p50)} / ${num(own.latency_ms.p95)} / ${num(own.latency_ms.p99)} ms`, "not provided by HAProxy"],
+         ["Average response time", "—", `${nf.format(sum.rtime_ms)} ms`]]
+          .map(([m, a, b]) => h("tr", null, h("th", null, m), h("td", {class: "num"}, a), h("td", {class: "num"}, b))))),
+    h("p", {class: "hint"}, "Demo mode: when both run at once they share the host CPU and the load is split, so use this view to watch behaviour, not to quote numbers. The report's numbers come from scripted runs with one system at a time."))
+    : h("p", {class: "hint"}, "Own LB is stopped, so only HAProxy is shown. Choose Both (demo) in U13 for a side-by-side comparison.");
   put("haproxy-body",
     h("p", null, h("span", {class: "badge http"}, `algorithm: ${data.algorithm || "?"}`), "  ", own ? h("span", {class: "badge syn"}, `own LB: ${own.algorithm}`) : null),
+    h("div", {class: "tiles"},
+      tile("HAProxy requests/s", data.rps === null ? "—" : nf.format(data.rps)), tile("HAProxy total requests", nf.format(sum.total)),
+      tile("Active sessions", nf.format(sum.scur)), tile("Avg response", `${nf.format(sum.rtime_ms)} ms`)),
+    h("figure", null, h("figcaption", null, "HAProxy requests per second"),
+      h("div", {class: "chart"}, sparkline((data.history || []).map((p) => p.rps), "HAProxy requests per second"))),
+    compare,
     h("table", null,
       h("thead", null, h("tr", null, h("th", null, "Server"), h("th", null, "Status"), h("th", {class: "num"}, "Sessions"), h("th", null, "HAProxy share"),
         h("th", null, "Own LB share"), h("th", {class: "num"}, "Avg resp"))),
@@ -492,7 +516,10 @@ function applyState() {
     if (d.control === "rtt") on = Number(d.rtt) === Number(st.rtt_ms);
     if (d.control === "algorithm") on = d.algorithm === own;
     if (d.control === "haproxy-algorithm") on = d.algorithm === st.haproxy_algorithm;
-    if (d.control === "active-system") on = d.system === "own" ? st.lb_running : st.haproxy_running;
+    if (d.control === "active-system") {
+      const both = st.lb_running && st.haproxy_running;
+      on = d.system === "both" ? both : d.system === "own" ? st.lb_running && !both : st.haproxy_running && !both;
+    }
     if (d.control === "start-load") disabled = st.load_running;
     if (d.control === "stop-load") disabled = !st.load_running;
     if (d.control === "kill-b3") disabled = !st.b3_running;

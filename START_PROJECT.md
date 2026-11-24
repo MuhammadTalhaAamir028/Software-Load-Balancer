@@ -14,7 +14,7 @@ To stop: close the `quick_start.bat` window (stops the UI), then `bash topo/tear
 
 ### What you need to know before you start
 - The routed topology needs a real Linux kernel (network namespaces, bridges, `tc netem`). On Windows that means WSL2. Windows alone cannot run it, but it is fine for editing code, running the `lb/core` unit tests and viewing captures in Wireshark.
-- All commands below run in WSL2 Ubuntu (22.04 or 24.04 recommended; the project was built on 26.04) or a Linux VM. Use a Linux filesystem clone such as `~/slb`, not `/mnt/c/...`.
+- All commands below run in WSL2 **Ubuntu 24.04** (the tested default; the course allows 22.04 and 24.04) or a Linux VM. `start.py` and `quick_start.bat` use the `Ubuntu-24.04` distro; to use another one, pass `--distro NAME`. A second distro in the same WSL cannot run its own Docker at the same time (they share one network), so stop Docker in the other distro first. Use a Linux filesystem clone such as `~/slb`, not `/mnt/c/...`.
 - Nothing runs on `localhost`: the experiments use the routed lab, so packets really cross two routers. A Windows browser cannot reach the container addresses (10.0.x.x), which is why the UI uses a small relay that listens on `127.0.0.1:8765` only.
 - WSL shuts down when nothing is running in it, and the lab loses its links when that happens. `quick_start.bat` keeps WSL alive while its window is open. If you start the lab by hand, keep a terminal open (for example `wsl -e sleep infinity`).
 - Shell scripts need Unix line endings (LF). If you copy the project from Windows and a script fails with `$'\r': command not found`, run `sed -i 's/\r$//' <file>` or copy again with `start.py`, which converts them.

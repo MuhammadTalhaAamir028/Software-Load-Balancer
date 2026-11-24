@@ -23,7 +23,7 @@ OTHER COMMANDS
   python start.py --print-commands print the exact shell commands this script runs inside Ubuntu
 
 OPTIONS
-  --distro NAME        use this WSL distro (default: the default Ubuntu, else installs Ubuntu-24.04)
+  --distro NAME        use this WSL distro (default: Ubuntu-24.04, the tested version; else any Ubuntu; else installs Ubuntu-24.04)
   --linux-dir PATH     where the project is copied inside Linux (default ~/slb)
   --no-update          skip "wsl --update"
   --no-browser         do not open the browser
@@ -147,11 +147,14 @@ rsync -a --delete \
   --exclude 'logs/' --exclude 'haproxy/haproxy.cfg' --exclude 'topo/.netem_state' \
   --exclude 'captures/*.pcap' --exclude 'results/ui/' --exclude 'results/lb_config.json' \
   --exclude 'results/configs/' --exclude 'results/.lock' \
+  --exclude 'results/exp1/' --exclude 'results/exp2/' --exclude 'results/tables/' --exclude 'results/plots/' \
+  --exclude 'results/seed.txt' --exclude 'results/checkpoint2/' \
   "$SRC"/ "$DEST"/
 cd "$DEST"
 # Windows checkouts can add CRLF line endings, which break shell scripts and the .env file.
 find . -type f \( -name '*.sh' -o -name '*.py' -o -name '*.json' -o -name '*.yml' -o -name '*.yaml' \
-  -o -name '*.tmpl' -o -name '.env' -o -name '*.html' -o -name '*.js' -o -name '*.css' \) -not -path './.git/*' \
+  -o -name '*.tmpl' -o -name '.env' -o -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.cfg' -o -name '*.conf' \
+  -o -path './topo/frr/*' \) -not -path './.git/*' \
   -exec sed -i 's/\r$//' {} +
 chmod +x ui/start.sh topo/*.sh backends/*.sh bench/*.sh haproxy/*.sh 2>/dev/null || true
 
@@ -332,7 +335,9 @@ def ensure_distro(args) -> str:
     if args.distro and args.distro in names:
         chosen = args.distro
     elif not args.distro:
-        chosen = next((name for name in names if name.lower().startswith("ubuntu")), None)
+        # Ubuntu 24.04 is the tested version: use it if it is installed, else any Ubuntu, else install 24.04.
+        chosen = DEFAULT_DISTRO if DEFAULT_DISTRO in names else next(
+            (name for name in names if name.lower().startswith("ubuntu")), None)
     if chosen is None:
         wanted = args.distro or DEFAULT_DISTRO
         say(f"Installing {wanted} (a few minutes)...")

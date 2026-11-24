@@ -1,6 +1,16 @@
 * text=auto
 *.sh text eol=lf
 *.py text eol=lf
+# Files that are copied into Linux containers or run by Linux tools must stay LF on every checkout.
+# (A CRLF in topo/frr/daemons makes FRR start every routing daemon and skip the static routes.)
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.tmpl text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+.env text eol=lf
+topo/frr/* text eol=lf
 
 # Windows batch files need CRLF line endings
 *.bat text eol=crlf

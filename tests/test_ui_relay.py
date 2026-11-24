@@ -78,6 +78,21 @@ class ParserTests(unittest.TestCase):
         self.assertEqual((events[0]["backend"], events[0]["state"]), ("b3", "DOWN"))
 
 
+class HaproxySummaryTests(unittest.TestCase):
+    def test_backend_row_gives_the_totals(self):
+        rows = [{"pxname": "be", "svname": "b1", "stot": "5"},
+                {"pxname": "be", "svname": "BACKEND", "stot": "120", "scur": "7", "rtime": "13", "econ": "2", "eresp": "1"}]
+        self.assertEqual(relay.haproxy_summary(rows), {"total": 120, "scur": 7, "rtime_ms": 13.0, "errors": 3})
+
+    def test_missing_backend_row_or_empty_fields_give_zeros(self):
+        zero = {"total": 0, "scur": 0, "rtime_ms": 0.0, "errors": 0}
+        self.assertEqual(relay.haproxy_summary([]), zero)
+        self.assertEqual(relay.haproxy_summary([{"pxname": "be", "svname": "BACKEND", "stot": "", "rtime": "x"}]), zero)
+
+    def test_both_is_an_allowed_active_system(self):
+        self.assertEqual(relay.ACTIVE_SYSTEMS, {"own", "haproxy", "both"})
+
+
 class LogTailTests(unittest.TestCase):
     def test_reads_only_new_lines_and_waits_for_complete_lines(self):
         import pathlib

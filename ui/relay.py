@@ -43,7 +43,7 @@ CLIENT = "c1"                      # every in-lab request/measurement is made fr
 DEMO_UA = "project5-ui-demo"       # marks the packets of the capture demo
 RTT_VALUES = {"0", "20", "100", "200"}
 ALGORITHMS = {"round_robin", "least_conn", "ip_hash"}
-ACTIVE_SYSTEMS = {"own", "haproxy"}
+ACTIVE_SYSTEMS = {"own", "haproxy", "both"}     # "both" is for the live side-by-side demo only, never for experiments
 HAPROXY_BALANCE = {"roundrobin": "round_robin", "leastconn": "least_conn", "source": "ip_hash"}
 
 NODE_INFO = {
@@ -545,6 +545,24 @@ def haproxy_algorithm() -> str:
     return HAPROXY_BALANCE.get(match.group(1), match.group(1)) if match else ""
 
 
+def haproxy_summary(rows: list) -> dict:
+    """Totals of the HAProxy backend ('be'): requests, current sessions, average response time, connection errors."""
+    for row in rows:
+        if row.get("pxname") == "be" and row.get("svname") == "BACKEND":
+            def number(key):
+                try:
+                    return float(row.get(key) or 0)
+                except ValueError:
+                    return 0.0
+            return {"total": int(number("stot")), "scur": int(number("scur")), "rtime_ms": number("rtime"),
+                    "errors": int(number("econ") + number("eresp"))}
+    return {"total": 0, "scur": 0, "rtime_ms": 0.0, "errors": 0}
+
+
+HAPROXY_HISTORY: collections.deque = collections.deque(maxlen=120)
+_haproxy_lock = threading.Lock()
+
+
 def haproxy_data() -> dict:
     csv_result = docker_exec(CLIENT, "curl", "-s", "-m", "2", f"http://{HAPROXY_IP}:{HAPROXY_STATS_PORT}/;csv")
     rows = parse_haproxy_csv(csv_result["stdout"])
@@ -553,8 +571,17 @@ def haproxy_data() -> dict:
                and row.get("svname") not in ("FRONTEND", "BACKEND")]
     problem = csv_result["stderr"] or ("HAProxy statistics did not answer (is the HAProxy node running with a "
                                        "rendered haproxy.cfg?)")
-    return {"ok": bool(servers), "servers": servers, "algorithm": haproxy_algorithm(),
-            "error": "" if servers else problem, "timestamp": utc_now()}
+    summary, rps, history = haproxy_summary(rows), None, []
+    if servers:                      # requests/s from the growth of HAProxy's own request counter between two calls
+        now = time.time()
+        with _haproxy_lock:
+            previous = HAPROXY_HISTORY[-1] if HAPROXY_HISTORY else None
+            if previous and summary["total"] >= previous["total"] and now > previous["t"]:
+                rps = round((summary["total"] - previous["total"]) / (now - previous["t"]), 1)
+            HAPROXY_HISTORY.append({"t": now, "total": summary["total"], "rps": rps, "rtime_ms": summary["rtime_ms"]})
+            history = list(HAPROXY_HISTORY)
+    return {"ok": bool(servers), "servers": servers, "algorithm": haproxy_algorithm(), "summary": summary,
+            "rps": rps, "history": history, "error": "" if servers else problem, "timestamp": utc_now()}
 
 
 class LogTail:
@@ -808,10 +835,18 @@ def control(path: str, body: dict) -> tuple:
     if path == "start-load":
         if docker_exec(CLIENT, "pgrep", "-x", "hey", timeout=5)["returncode"] == 0:
             return True, "Load is already running.", ""
-        started = [run(["docker", "exec", "-d", PREFIX + node, "hey", "-z", "60s", "-c", "50",
-                        f"http://{LB_IP}:{LB_PORT}/"], timeout=10) for node in ("c1", "c2", "c3", "c4")]
+        # Aim the load at whichever system is running; when both run (demo), split the connections between them.
+        targets = [(name, ip) for name, ip, node in (("own LB", LB_IP, "lb"), ("HAProxy", HAPROXY_IP, "haproxy"))
+                   if run(["docker", "inspect", "-f", "{{.State.Running}}", PREFIX + node])["stdout"] == "true"]
+        if not targets:
+            return False, "Neither the own LB nor HAProxy is running.", ""
+        conns = str(50 // len(targets))
+        started = [run(["docker", "exec", "-d", PREFIX + node, "hey", "-z", "60s", "-c", conns,
+                        f"http://{ip}:{LB_PORT}/"], timeout=10)
+                   for node in ("c1", "c2", "c3", "c4") for _, ip in targets]
         ok = all(item["ok"] for item in started)
-        return ok, ("Load started: 4 clients x 50 connections for 60 s." if ok else "Could not start load."), ""
+        names = " and ".join(name for name, _ in targets)
+        return ok, (f"Load started on {names}: 4 clients x {conns} connections each for 60 s." if ok else "Could not start load."), ""
     if path == "stop-load":
         for node in ("c1", "c2", "c3", "c4"):
             docker_exec(node, "pkill", "-x", "hey", timeout=10)      # exit code 1 only means "nothing was running"
@@ -840,6 +875,15 @@ def control(path: str, body: dict) -> tuple:
         system = str(body.get("system", ""))
         if system not in ACTIVE_SYSTEMS:
             raise ValueError("system must be own or haproxy")
+        if system == "both":
+            # Live side-by-side demo: both run, different addresses (10.0.2.10 and .11). Not for measurements:
+            # they then share the host CPU and the load, so experiments always run one system at a time.
+            first = run(["docker", "restart", "-t", "1", PREFIX + "lb"], timeout=40)
+            second = run(["docker", "restart", "-t", "1", PREFIX + "haproxy"], timeout=40)
+            ok = first["ok"] and second["ok"] and wait_for_http(f"http://{LB_IP}:{LB_PORT}/") \
+                and wait_for_http(f"http://{HAPROXY_IP}:{LB_PORT}/")
+            return ok, ("Both systems are running (demo mode: shared CPU, do not use for measurements)." if ok
+                        else "Could not start both: " + (first["stderr"] or second["stderr"] or "not answering")), ""
         start, stop = ("lb", "haproxy") if system == "own" else ("haproxy", "lb")
         started = run(["docker", "restart", "-t", "1", PREFIX + start], timeout=40)
         stopped = run(["docker", "stop", "-t", "1", PREFIX + stop], timeout=40)

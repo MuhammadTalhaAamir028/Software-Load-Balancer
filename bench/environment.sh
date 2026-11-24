@@ -24,8 +24,14 @@ echo "ulimit_host:  $(ulimit -n)"
 echo "ulimit_c1:    $(docker exec "${PREFIX}c1" sh -c 'ulimit -n' 2>/dev/null)"
 echo "container_cpu_limits (cpus):"
 for n in lb haproxy b1 b2 b3 b4 c1 c2 c3 c4; do
-  nano=$(docker inspect -f '{{.HostConfig.NanoCpus}}' "${PREFIX}${n}" 2>/dev/null)
-  awk -v n="$n" -v v="${nano:-0}" 'BEGIN { printf "  %-8s %s\n", n, (v == 0 ? "unlimited" : v / 1e9) }'
+  # containerlab sets the limit as CpuQuota/CpuPeriod, docker run --cpus sets NanoCpus: read both
+  lim=$(docker inspect -f '{{.HostConfig.NanoCpus}} {{.HostConfig.CpuQuota}} {{.HostConfig.CpuPeriod}}' "${PREFIX}${n}" 2>/dev/null)
+  awk -v n="$n" -v l="${lim:-0 0 0}" 'BEGIN {
+    split(l, a, " ")
+    if (a[1] > 0) cpus = a[1] / 1e9
+    else if (a[2] > 0 && a[3] > 0) cpus = a[2] / a[3]
+    else cpus = ""
+    printf "  %-8s %s\n", n, (cpus == "" ? "unlimited" : cpus) }'
 done
 echo "backend_delay_ms:"
 for n in b1 b2 b3 b4; do
