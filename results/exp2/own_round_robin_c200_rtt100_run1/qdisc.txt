@@ -1,0 +1,3 @@
+--- r1 qdisc
+qdisc netem 8003: root refcnt 9 limit 1000 delay 50ms seed 10839497075671963047
+qdisc netem 8004: root refcnt 9 limit 1000 delay 50ms seed 15429622264421075352

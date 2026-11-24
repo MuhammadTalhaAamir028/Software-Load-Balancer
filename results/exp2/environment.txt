@@ -1,0 +1,32 @@
+date_utc:     2026-11-24T12:58:51Z
+git_commit:    ()
+git_dirty:    0 changed files
+cpu_model:    11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz
+cpu_cores:    8
+memory:       15.5 GiB
+os:           Ubuntu 24.04.5 LTS
+kernel:       6.18.58.1-microsoft-standard-WSL2
+docker:       29.10.0
+containerlab: 0.79.0
+python:       Python 3.12.3
+haproxy:      HAProxy version 2.8.32-6b68c81 2026/11/18 - https://haproxy.org/
+client_image: sha256:7eb94a3fd036add3f401f3b38f15746de8e69f5188f0a135127b31026db99078 (hey built from rakyll/hey v0.1.4)
+wrk:          wrk debian/4.1.0-3build1 [epoll] Copyright (C) 2012 Will Glozer
+ulimit_host:  65535
+ulimit_c1:    65535
+container_cpu_limits (cpus):
+  lb       1
+  haproxy  1
+  b1       1
+  b2       1
+  b3       0.5
+  b4       0.25
+  c1       unlimited
+  c2       unlimited
+  c3       unlimited
+  c4       unlimited
+backend_delay_ms:
+  b1 5
+  b2 10
+  b3 25
+  b4 50

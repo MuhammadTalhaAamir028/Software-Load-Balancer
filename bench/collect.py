@@ -194,8 +194,14 @@ def build_summary(run_dir, exp, system, algorithm, concurrency, rtt_ms, run,
     windows = {"pre": window_stats(rows, 0.0, half), "post": window_stats(rows, half, duration)}
     if any(w["requests"] == 0 for w in windows.values()):
         problems.append("no requests in a window")
-    if windows["pre"]["failed"]:
-        problems.append("%d failed requests before the kill" % windows["pre"]["failed"])
+    # hey's offset is the request START time. A request that started just before the kill and was refused after it
+    # (the load balancer was busy, so requests take hundreds of ms) is a failure caused by the kill, not a fault before it.
+    # The validity rule therefore counts failures that were COMPLETED before the kill; the in-flight ones are kept
+    # in the summary as failed_inflight_at_kill. The reported windows are unchanged (split by start time).
+    failed_before_kill = sum(1 for r in rows if r[2] >= 500 and r[0] + r[1] / 1000.0 < half)
+    failed_inflight_at_kill = windows["pre"]["failed"] - failed_before_kill
+    if failed_before_kill:
+        problems.append("%d failed requests before the kill" % failed_before_kill)
 
     down_ms = detection_s = failed_detect = None
     if kill_ms is not None:
@@ -233,6 +239,7 @@ def build_summary(run_dir, exp, system, algorithm, concurrency, rtt_ms, run,
         "t0_ms": t0_ms, "kill_ms": kill_ms, "down_ms": down_ms, "detection_s": detection_s,
         "windows": windows,
         "failed_in_detection_window": failed_detect,
+        "failed_inflight_at_kill": failed_inflight_at_kill,
         "per_backend_pre": per_pre, "per_backend_post": per_post,
         "cpu_pct": cpu_summary(run_dir, half),
         "valid": not problems, "invalid_reason": "; ".join(problems) or None,

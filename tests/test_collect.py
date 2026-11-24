@@ -142,6 +142,16 @@ class CollectTest(unittest.TestCase):
                 self.assertFalse(s["valid"])
                 self.assertIn(expected, s["invalid_reason"])
 
+    def test_request_in_flight_at_the_kill_does_not_invalidate_the_run(self):
+        make_run(self.dir)
+        # starts at 29.8 s, takes 0.46 s, so it is refused AFTER the kill at 30 s: caused by the kill, not before it
+        with open(os.path.join(self.dir, "hey_c3.csv"), "a") as fh:
+            fh.write("0.46,0,0,0,0,0,502,29.8\n")
+        s = self.summary()
+        self.assertTrue(s["valid"], s["invalid_reason"])
+        self.assertEqual(s["windows"]["pre"]["failed"], 1)       # the window is still split by start time
+        self.assertEqual(s["failed_inflight_at_kill"], 1)
+
     def test_late_kill_is_invalid(self):
         make_run(self.dir)
         with open(os.path.join(self.dir, "kill_ts.txt"), "w") as fh:

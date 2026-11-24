@@ -1,0 +1,51 @@
+{
+  "exp": "exp1",
+  "system": "haproxy",
+  "algorithm": "round_robin",
+  "concurrency": 50,
+  "rtt_ms": 0,
+  "run": 1,
+  "t0_ms": 1795527579584,
+  "kill_ms": 1795527609832,
+  "down_ms": 1795527612297,
+  "detection_s": 2.465,
+  "windows": {
+    "pre": {
+      "rps": 1639.9,
+      "p50_ms": 26.0,
+      "p95_ms": 90.6,
+      "p99_ms": 112.1,
+      "requests": 49197,
+      "failed": 0
+    },
+    "post": {
+      "rps": 1506.17,
+      "p50_ms": 12.1,
+      "p95_ms": 99.3,
+      "p99_ms": 136.4,
+      "requests": 45185,
+      "failed": 1087
+    }
+  },
+  "failed_in_detection_window": 1087,
+  "failed_inflight_at_kill": 0,
+  "per_backend_pre": {
+    "b1": 12140,
+    "b2": 12140,
+    "b3": 12139,
+    "b4": 12139
+  },
+  "per_backend_post": {
+    "b1": 14824,
+    "b2": 14824,
+    "b3": 1353,
+    "b4": 14824
+  },
+  "cpu_pct": {
+    "pre_mean": 63.6,
+    "post_mean": 53.0,
+    "peak": 69.0
+  },
+  "valid": true,
+  "invalid_reason": null
+}

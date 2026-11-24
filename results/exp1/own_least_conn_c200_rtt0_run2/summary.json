@@ -1,0 +1,50 @@
+{
+  "exp": "exp1",
+  "system": "own",
+  "algorithm": "least_conn",
+  "concurrency": 200,
+  "rtt_ms": 0,
+  "run": 2,
+  "t0_ms": 1795525598972,
+  "kill_ms": 1795525629179,
+  "down_ms": 1795525632306,
+  "detection_s": 3.127,
+  "windows": {
+    "pre": {
+      "rps": 1279.8,
+      "p50_ms": 151.1,
+      "p95_ms": 202.0,
+      "p99_ms": 243.7,
+      "requests": 38394,
+      "failed": 0
+    },
+    "post": {
+      "rps": 1462.13,
+      "p50_ms": 128.1,
+      "p95_ms": 180.8,
+      "p99_ms": 220.9,
+      "requests": 43864,
+      "failed": 2449
+    }
+  },
+  "failed_in_detection_window": 2407,
+  "per_backend_pre": {
+    "b1": 10367,
+    "b2": 10291,
+    "b3": 9301,
+    "b4": 7749
+  },
+  "per_backend_post": {
+    "b1": 15460,
+    "b2": 15312,
+    "b3": 2643,
+    "b4": 11141
+  },
+  "cpu_pct": {
+    "pre_mean": 99.7,
+    "post_mean": 97.2,
+    "peak": 100.3
+  },
+  "valid": true,
+  "invalid_reason": null
+}

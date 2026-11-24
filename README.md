@@ -19,7 +19,7 @@ A Python asyncio layer-7 reverse proxy (standard library only) that spreads HTTP
 | `ui/` | The live browser UI and its relay |
 | `captures/`, `docs/img/`, `docs/evidence/` | Packet captures, annotated screenshots, measured evidence |
 | `docs/report/` | The technical report |
-| `tests/` | 221 unit tests |
+| `tests/` | 222 unit tests |
 
 ## Reproduce the project
 
@@ -91,7 +91,7 @@ A run writes `results/<exp>/<system>_<algo>_c<N>_rtt<R>_run<k>/summary.json` (an
 ### 8. Tests
 
 ```bash
-python -m unittest discover -s tests -t .          # 221 tests, about 50 seconds, runs on Windows or Linux
+python -m unittest discover -s tests -t .          # 222 tests, about 50 seconds, runs on Windows or Linux
 ```
 
 ### 9. Stop

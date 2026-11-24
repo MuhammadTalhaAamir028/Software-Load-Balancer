@@ -133,10 +133,15 @@ for c in $CLIENT_NODES; do
 done
 
 # ---- 6. t0 + 30 s: snapshot, then kill b3 ---------------------------------------------------
-sleep_until_mono $(( T0_MONO + KILL_AT_MS - 100 ))     # leave 100 ms for the snapshot
-snapshot c1 s30
+# The snapshot runs in the background so that the kill happens at t0 + 30 s even when the LB is so busy that its
+# stats endpoint answers slowly (a synchronous snapshot delayed the kill by 3+ s and the run was rejected).
+sleep_until_mono $(( T0_MONO + KILL_AT_MS - 500 ))
+snapshot c1 s30 &
+SNAP_PID=$!
+sleep_until_mono $(( T0_MONO + KILL_AT_MS ))
 KILL_TS_FILE="$RUN_DIR/kill_ts.txt" bash "$BENCH_DIR/../backends/kill_backend.sh" "$KILLED_BACKEND" >/dev/null 2>"$RUN_DIR/kill.err" \
   || echo "kill failed: $(cat "$RUN_DIR/kill.err")" >&2
+wait "$SNAP_PID" 2>/dev/null || true
 
 # ---- 7. t0 + 60 s -----------------------------------------------------------------------------
 wait "${pids[@]}" || true
