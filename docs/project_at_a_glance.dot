@@ -75,7 +75,15 @@ digraph glance {
       <TR><TD ALIGN="LEFT"><B>Packet recorder</B>: records the real network messages (packets)<BR ALIGN="LEFT"/>as proof of what happened.<BR ALIGN="LEFT"/></TD></TR>
     </TABLE>>];
 
+  // ---------------- 7. the live UI ----------------
+  ui [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" BGCOLOR="#e8f4f8" COLOR="#0593c6">
+      <TR><TD ALIGN="LEFT"><B>7. Live UI: the web page on your PC</B></TD></TR>
+      <TR><TD ALIGN="LEFT">Shows the whole lab live in a browser: the map, the routing proof,<BR ALIGN="LEFT"/>one real request, a live packet capture, the numbers, the failover<BR ALIGN="LEFT"/>and HAProxy next to our load balancer. It has buttons (start load,<BR ALIGN="LEFT"/>switch b3 off, change delay, choose own LB, HAProxy or both).<BR ALIGN="LEFT"/>A small helper program (the relay) passes its fixed commands to the lab.<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
   // ---------------- arrows ----------------
+  ui -> tools [color="#0593c6", fontcolor="#0593c6", style=dashed, constraint=false, label=<  <B>H</B>  buttons and live view>];
   // The main road is two-way: the request goes down, the answer comes back up the same road.
   clients -> r1 [dir=both, color="#1f5fbf", fontcolor="#1f5fbf", label=<  <B>A</B>  request goes down: "give me the page".<BR/>  <B>C</B>  the answer comes back up the same road.>];
   r1 -> bridge [dir=both, color="#1f5fbf"];
@@ -91,7 +99,7 @@ digraph glance {
 
   // ---------------- layout hints ----------------
   {rank=same; ownlb; haproxy; watch;}
-  {rank=same; r1; tools;}
+  {rank=same; r1; tools; ui;}
   ownlb -> haproxy [style=invis];
   haproxy -> watch [style=invis];
 }

@@ -1,0 +1,81 @@
+// How to start the project: new machine, or a machine that has run it before. Includes the background Docker service.
+// Render: dot -Tpng -Gdpi=110 docs/startup_flowchart.dot -o docs/startup_flowchart.png
+//         dot -Tsvg docs/startup_flowchart.dot -o docs/startup_flowchart.svg
+digraph startup {
+  rankdir=TB; newrank=true; compound=true;
+  nodesep=0.45; ranksep=0.5; pad=0.3;
+  fontname="Helvetica"; fontsize=20; labelloc=t; labeljust=l;
+  label="How to start the project  (new machine, or a machine that has run it before)";
+  node [fontname="Helvetica", fontsize=12, shape=box, style="rounded,filled", fillcolor="#ffffff", margin="0.18,0.1"];
+  edge [fontname="Helvetica", fontsize=11, penwidth=1.6];
+
+  start [label="START\nYou want to run the project", shape=oval, fillcolor="#222222", fontcolor="white"];
+  setup [label="Has this PC run the project before?\n(WSL Ubuntu 24.04, Docker and the folder ~/slb all exist)", shape=diamond, style="filled", fillcolor="#fff2cc", margin="0.05,0.05"];
+
+  // ---------------- new machine ----------------
+  subgraph cluster_new {
+    label="NEW MACHINE (about 10 to 25 minutes, once)"; labeljust=l; fontsize=14; style="rounded,filled"; fillcolor="#eef9ee"; color="#2a8a4a";
+    n0 [label="1. Sync the Windows clock\nSettings > Time and language > Sync now\n(a wrong clock makes experiment runs invalid)", fillcolor="#d8f0dc"];
+    n1 [label="2. Double-click start.bat\n(or run: python start.py)", fillcolor="#d8f0dc"];
+    n2 [label="It does everything, in order:\ninstalls WSL and Ubuntu 24.04\n-> installs Docker, containerlab and tshark inside Ubuntu\n-> builds the images -> deploys the lab -> starts the UI", fillcolor="#d8f0dc"];
+    n3 [label="Windows asks for a restart?", shape=diamond, style=filled, fillcolor="#fff2cc", margin="0.05,0.05"];
+    n4 [label="Restart the PC,\nthen double-click start.bat again", fillcolor="#d8f0dc"];
+  }
+
+  // ---------------- machine that has run it ----------------
+  subgraph cluster_old {
+    label="MACHINE THAT HAS RUN THE PROJECT (about 1 minute)"; labeljust=l; fontsize=14; style="rounded,filled"; fillcolor="#eef4fc"; color="#1f5fbf";
+    e0 [label="1. Check the Windows clock is synced\n(offset under 0.5 s)", fillcolor="#dbe8fa"];
+    e1 [label="2. Is another Ubuntu distro\nrunning Docker?", shape=diamond, style=filled, fillcolor="#fff2cc", margin="0.05,0.05"];
+    e1a [label="Stop it:\nwsl -d Ubuntu -u root systemctl stop docker docker.socket\n(two distros share one network and would clash)", fillcolor="#dbe8fa"];
+    e2 [label="3. Is Docker running inside Ubuntu-24.04?\n(see the note on the right)", shape=diamond, style=filled, fillcolor="#fff2cc", margin="0.05,0.05"];
+    e2a [label="Start it:\nwsl -d Ubuntu-24.04 -u root systemctl start docker\n(quick_start.bat also wakes WSL, which starts Docker by itself)", fillcolor="#dbe8fa"];
+    e3 [label="4. Double-click quick_start.bat\nKeep its window open: it keeps WSL awake", fillcolor="#dbe8fa"];
+  }
+
+  dnote [label="About Docker in the background\n\nDocker is a service that runs inside Ubuntu 24.04 (not Docker Desktop).\nIt starts by itself when WSL starts and stops when WSL shuts down\n(WSL shuts itself down when nothing is running in it).\nWhen Docker restarts, the lab containers come back WITHOUT their\nnetwork links: the check below catches this and the fix is a rebuild.\nDo not run Docker in two Ubuntu distros at once.", shape=note, fillcolor="#ffe8cc", color="#c9731a"];
+
+  // ---------------- both paths meet ----------------
+  subgraph cluster_common {
+    label="BOTH PATHS: check, then use"; labeljust=l; fontsize=14; style="rounded,filled"; fillcolor="#f4f4f4"; color="#666666";
+    c1 [label="In WSL, from ~/slb, run:\nbash topo/verify.sh", fillcolor="#e6e6e6"];
+    c2 [label="Traceroute c1 to b1 shows exactly\n10.0.1.1, 10.0.2.2 and 10.0.3.11?", shape=diamond, style=filled, fillcolor="#fff2cc", margin="0.05,0.05"];
+    c3 [label="Rebuild the lab:\nbash topo/build.sh\nthen run the check again", fillcolor="#ffd9d9"];
+    c4 [label="Open http://127.0.0.1:8765/\nTop right must say 'Relay online'", fillcolor="#e6e6e6"];
+    c5 [label="What do you want to do?", shape=diamond, style=filled, fillcolor="#fff2cc", margin="0.05,0.05"];
+    c6 [label="Demo\nUI panel U13: Start load, wait 20 s,\nKill b3, Restore b3.\nTry the algorithms and the delay buttons", fillcolor="#e6e6e6"];
+    c7 [label="72 experiments (about 2 to 2.5 hours)\nClose the UI and heavy programs,\nulimit -n 65535, then README step 6", fillcolor="#e6e6e6"];
+    stop [label="WHEN FINISHED\nclose the quick_start window -> bash topo/teardown.sh -> wsl --shutdown", shape=oval, fillcolor="#222222", fontcolor="white"];
+  }
+
+  start -> setup;
+  setup -> n0 [label="  No: first time", color="#2a8a4a", fontcolor="#2a8a4a"];
+  setup -> e0 [label="  Yes", color="#1f5fbf", fontcolor="#1f5fbf"];
+
+  n0 -> n1 -> n2 -> n3;
+  n3 -> n4 [label=" yes"];
+  n4 -> n1 [style=dashed, constraint=false];
+  n3 -> c1 [label=" no"];
+
+  e0 -> e1;
+  e1 -> e1a [label=" yes"];
+  e1a -> e2;
+  e1 -> e2 [label=" no"];
+  e2 -> e2a [label=" no, it is stopped"];
+  e2a -> e3;
+  e2 -> e3 [label=" yes"];
+  e3 -> c1;
+
+  c1 -> c2;
+  c2 -> c3 [label=" no (stars, or fewer hops)"];
+  c3 -> c1 [style=dashed, constraint=false];
+  c2 -> c4 [label=" yes"];
+  c4 -> c5;
+  c5 -> c6 [label=" show or test it"];
+  c5 -> c7 [label=" measure it"];
+  c6 -> stop;
+  c7 -> stop;
+
+  dnote -> e2 [style=dashed, arrowhead=none, color="#c9731a", constraint=false];
+  {rank=same; e2; dnote;}
+}

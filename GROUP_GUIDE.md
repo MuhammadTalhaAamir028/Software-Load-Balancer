@@ -4,6 +4,8 @@ For Talha, Sufyan and Abdur. This is the short version. The full commands are in
 
 ## 1. Start up
 
+A picture of these steps, for a new machine and for one that has run the project before (including the background Docker service): `docs/startup_flowchart.png`.
+
 1. **First time on a PC:** double-click `start.bat` (10 to 25 minutes, may ask for administrator rights and a restart; run it again after the restart).
    **Every other time:** double-click `quick_start.bat` (about 1 minute). Keep its window open; closing it stops the UI.
 2. Open <http://127.0.0.1:8765/>. The top right must say "Relay online".
