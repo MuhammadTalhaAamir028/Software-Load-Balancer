@@ -221,20 +221,6 @@ def _check_unknown(
             )
 
 
-def _required_section(
-    raw: Mapping[str, Any], name: str, errors: list[str]
-) -> Optional[dict]:
-    if name not in raw:
-        errors.append(f"{name}: required")
-        return None
-    value = raw[name]
-    if not isinstance(value, Mapping):
-        errors.append(f"{name}: must be an object/mapping, got {type(value).__name__}")
-        return None
-    _check_unknown(value, name, _SECTION_KEYS[name], errors)
-    return dict(value)
-
-
 def _optional_section(
     raw: Mapping[str, Any],
     name: str,
