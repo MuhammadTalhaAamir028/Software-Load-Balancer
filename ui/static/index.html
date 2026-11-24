@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project 5 Load Balancer Analytics</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">LB</div>
+      <div><strong>Software Load Balancer</strong><small>Live analytics presentation</small></div>
+    </div>
+    <div class="topbar-right">
+      <div id="relay-status" class="status-pill" role="status">Checking relay...</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Dashboard sections">
+      <a href="#topology">Topology</a>
+      <a href="#routing">Routing</a>
+      <a href="#network">Network</a>
+      <a href="#request">Request and packets</a>
+      <a href="#metrics">Metrics</a>
+      <a href="#health">Failover</a>
+      <a href="#reference">HAProxy</a>
+      <a href="#backends">Backends</a>
+      <a href="#experiments">Experiments</a>
+      <a href="#demo">Demo</a>
+    </nav>
+
+    <main id="main">
+      <div id="stale-banner" class="banner" role="status" hidden></div>
+
+      <div class="panel-grid">
+        <section class="panel wide" id="topology">
+          <header class="panel-header"><h2>U1 Live topology</h2><div class="panel-meta" id="u1-meta"></div></header>
+          <div class="panel-body">
+            <div id="topology-map" class="map"><div class="empty">Loading...</div></div>
+            <ul class="legend">
+              <li><i class="sw flow-client"></i>1 client request to the LB (:8080)</li>
+              <li><i class="sw flow-forward"></i>2 forwarded request to a backend (:8000, X-Forwarded-For)</li>
+              <li><i class="sw flow-probe"></i>3 health probe, GET /health every 1 s</li>
+              <li><i class="sw flow-stats"></i>4 statistics (:9090)</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel half" id="routing">
+          <header class="panel-header"><h2>U2 Routing proof</h2><div class="panel-meta" id="u2-meta"></div></header>
+          <div class="panel-body" id="routing-body"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section class="panel half" id="network">
+          <header class="panel-header"><h2>U3 Network condition</h2><div class="panel-meta" id="u3-meta"></div></header>
+          <div class="panel-body" id="netem-body"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section class="panel wide" id="request">
+          <header class="panel-header"><h2>U4-U5 Request and packet view</h2><div class="panel-meta" id="u4-meta"></div></header>
+          <div class="panel-body">
+            <div class="split">
+              <div>
+                <h3>One live request</h3>
+                <div id="request-body"><div class="empty">Loading...</div></div>
+                <button type="button" id="request-button">Send another request</button>
+              </div>
+              <div>
+                <h3>Live packets</h3>
+                <p class="hint">Captures 6 s on the LB port, sends 3 marked requests on one connection, then labels what happened.</p>
+                <div class="controls">
+                  <button type="button" id="capture-button" class="primary">Capture and annotate</button>
+                  <a id="pcap-link" href="/api/captures/ui_live.pcap" hidden>Download .pcap</a>
+                </div>
+                <div id="capture-status" class="hint" role="status"></div>
+              </div>
+            </div>
+            <div id="capture-result"></div>
+          </div>
+        </section>
+
+        <section class="panel wide" id="metrics">
+          <header class="panel-header"><h2>U6-U7 Own-LB metrics</h2><div class="panel-meta" id="u6-meta"></div></header>
+          <div class="panel-body">
+            <div id="metrics-kpis" class="kpis"></div>
+            <div class="charts">
+              <figure><figcaption>Requests per second</figcaption><div id="chart-rps" class="chart"></div></figure>
+              <figure><figcaption>p95 latency (ms)</figcaption><div id="chart-p95" class="chart"></div></figure>
+            </div>
+            <table>
+              <thead><tr><th>Backend</th><th>Requests</th><th class="grow">Share</th><th>Active</th><th>Health</th><th>Errors</th></tr></thead>
+              <tbody id="backend-table"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel half" id="health">
+          <header class="panel-header"><h2>U8 Health and failover</h2><div class="panel-meta" id="u8-meta"></div></header>
+          <div class="panel-body" id="failover-body"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section class="panel half" id="reference">
+          <header class="panel-header"><h2>U9 HAProxy side-by-side</h2><div class="panel-meta" id="u9-meta"></div></header>
+          <div class="panel-body" id="haproxy-body"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section class="panel half" id="backends">
+          <header class="panel-header"><h2>U10 Backend capacity</h2><div class="panel-meta" id="u10-meta"></div></header>
+          <div class="panel-body" id="capacity-body"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section class="panel half" id="experiments">
+          <header class="panel-header"><h2>U11-U12 Experiments and integrity</h2><div class="panel-meta" id="u11-meta"></div></header>
+          <div class="panel-body">
+            <div id="experiment-banner" class="banner" hidden></div>
+            <div id="experiment-body"><div class="empty">Loading...</div></div>
+            <h3>U12 Environment</h3>
+            <div id="environment-body"><div class="empty">Loading...</div></div>
+          </div>
+        </section>
+
+        <section class="panel wide" id="demo">
+          <header class="panel-header"><h2>U13 Guided demo</h2><div class="panel-meta" id="u13-meta"></div></header>
+          <div class="panel-body">
+            <div class="demo-grid">
+              <div>
+                <h3>Failover demo</h3>
+                <p class="hint">Runs the fixed steps below. Watch U6 and U8 change while it runs.</p>
+                <ol id="demo-steps" class="steps"></ol>
+                <div class="controls">
+                  <button type="button" id="demo-run" class="primary">Run failover demo</button>
+                  <button type="button" id="demo-cancel" hidden>Cancel</button>
+                </div>
+              </div>
+              <div class="control-groups">
+                <fieldset><legend>Load</legend>
+                  <button type="button" data-control="start-load" class="primary">Start load</button>
+                  <button type="button" data-control="stop-load">Stop load</button>
+                </fieldset>
+                <fieldset><legend>Backend b3</legend>
+                  <button type="button" data-control="kill-b3" class="danger">Kill b3</button>
+                  <button type="button" data-control="start-b3">Restore b3</button>
+                </fieldset>
+                <fieldset><legend>Round-trip delay</legend>
+                  <button type="button" data-control="rtt" data-rtt="0">0 ms</button>
+                  <button type="button" data-control="rtt" data-rtt="20">20 ms</button>
+                  <button type="button" data-control="rtt" data-rtt="100">100 ms</button>
+                  <button type="button" data-control="rtt" data-rtt="200">200 ms</button>
+                </fieldset>
+                <fieldset><legend>Own LB algorithm</legend>
+                  <button type="button" data-control="algorithm" data-algorithm="round_robin">Round robin</button>
+                  <button type="button" data-control="algorithm" data-algorithm="least_conn">Least conn</button>
+                  <button type="button" data-control="algorithm" data-algorithm="ip_hash">IP hash</button>
+                </fieldset>
+                <fieldset><legend>HAProxy algorithm</legend>
+                  <button type="button" data-control="haproxy-algorithm" data-algorithm="round_robin">Round robin</button>
+                  <button type="button" data-control="haproxy-algorithm" data-algorithm="least_conn">Least conn</button>
+                  <button type="button" data-control="haproxy-algorithm" data-algorithm="ip_hash">IP hash</button>
+                </fieldset>
+                <fieldset><legend>Active system</legend>
+                  <button type="button" data-control="active-system" data-system="own">Own LB</button>
+                  <button type="button" data-control="active-system" data-system="haproxy">HAProxy</button>
+                </fieldset>
+              </div>
+            </div>
+            <ul id="control-log" class="control-log" aria-live="polite"><li class="hint">Control results appear here.</li></ul>
+          </div>
+        </section>
+
+        <section class="panel wide" id="freshness-panel">
+          <header class="panel-header"><h2>U14 Data freshness</h2><div class="panel-meta" id="u14-meta"></div></header>
+          <div class="panel-body"><div id="freshness" class="freshness"></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

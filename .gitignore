@@ -23,3 +23,9 @@ results/.lock
 
 # raw tcpdump output; the .pcapng conversions are committed
 captures/*.pcap
+
+# files created by the UI relay
+results/ui/
+
+# written by start.py on the Windows side
+.start_state.json
