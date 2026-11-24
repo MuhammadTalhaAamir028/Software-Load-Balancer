@@ -38,6 +38,24 @@ Follow these steps in order. Steps 1 to 4 take about 25 minutes the first time (
 | Other tools | tshark, tcpdump, Graphviz (diagram only) | tshark 4.2 |
 | Python | 3.9+ (the load balancer uses only the standard library) | 3.12 |
 
+### Environment used for the reported results
+
+The proposal asks for hardware, kernel and tool versions to be recorded here. These are the values of the 72 reported runs (also saved by `bench/environment.sh` in `results/exp1/environment.txt`).
+
+| Item | Value |
+|---|---|
+| Machine | 11th Gen Intel Core i5-1135G7 @ 2.40 GHz, 8 logical cores, 15.5 GiB RAM, Windows 11 Home |
+| Linux | WSL2, Ubuntu 24.04.5 LTS, kernel 6.18.58.1-microsoft-standard-WSL2 |
+| Docker / containerlab | Docker 29.10.0, containerlab 0.79.0 |
+| Routers / reference | FRRouting 10.2.1, HAProxy 2.8.32 |
+| Tools | Python 3.12.3, hey v0.1.4 (client image), wrk 4.1.0, tshark 4.2.2 |
+| CPU limits (cpus) | own LB 1, HAProxy 1, b1 1, b2 1, b3 0.5, b4 0.25, clients unlimited |
+| Backend delay (ms) | b1 5, b2 10, b3 25, b4 50 |
+| Open files | `ulimit -n 65535` on the host and in the clients |
+| Runs | 72 (seed 1), run on 2026-11-24 |
+
+The Checkpoint 1 and 2 evidence, the packet captures and the first annotated screenshots were produced earlier on the same lab in WSL2 Ubuntu 26.04; only the 72 experiment runs and the live UI screenshots come from Ubuntu 24.04.
+
 ### 2. Get the code
 
 ```bash
@@ -79,6 +97,7 @@ LB_CONFIG=$PWD/results/lb_config.json bash topo/build.sh       # deploy with tha
 bash haproxy/render.sh round_robin && docker restart -t 1 clab-lb-haproxy
 bash bench/run_all.sh --list                      # print the 72-run plan (nothing runs)
 SEED=1 bash bench/run_all.sh                      # about 2 to 2.5 hours; safe to stop and run again
+sudo apt install -y python3-matplotlib           # once, only needed for the plots
 python3 bench/analyze.py                          # tables in results/tables, plots in results/plots
 ```
 
@@ -97,6 +116,21 @@ python -m unittest discover -s tests -t .          # 222 tests, about 50 seconds
 ### 9. Stop
 
 `bash topo/teardown.sh` removes the lab; close the `quick_start.bat` window (or run `python start.py --stop`) to stop the UI. Remove network impairment with `bash topo/set_rtt.sh 0 && bash topo/set_loss.sh 0`.
+
+### Deliverables and where to find them
+
+| Deliverable | Where |
+|---|---|
+| Working proof of concept (live demo) | the lab plus the UI, see step 5 |
+| Architecture diagram with the addressing plan | `docs/architecture.png` (source `docs/architecture.dot`) |
+| Packet captures (.pcapng) | `captures/`, with the filters in `captures/README.md` |
+| Annotated screenshots | `docs/img/` |
+| Experimental results (72 runs, mean and spread) | `results/exp1/`, `results/exp2/`, tables in `results/tables/`, plots in `results/plots/` |
+| Technical report | `docs/report/Project5_Technical_Report.docx` |
+| Evidence of each checkpoint | `docs/evidence/` |
+| AI-use disclosure | `docs/AI_USE_DISCLOSURE.md` |
+
+For a short guide to running everything as a group, see [GROUP_GUIDE.md](GROUP_GUIDE.md).
 
 ### Good to know
 
